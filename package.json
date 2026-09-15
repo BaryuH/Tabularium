@@ -9,6 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "preview": "node scripts/preview.mjs",
     "test": "vitest run --passWithNoTests"
   },
   "devDependencies": {
