@@ -12,8 +12,9 @@
   color-scheme: light;
 }
 
+/* Dark: via OS preference unless explicitly overridden to light */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #161619;
     --surface: #1e1e22;
     --surface-2: #26262c;
@@ -23,6 +24,18 @@
     --accent: #928ee8;
     color-scheme: dark;
   }
+}
+
+/* Dark: explicit override */
+:root[data-theme="dark"] {
+  --bg: #161619;
+  --surface: #1e1e22;
+  --surface-2: #26262c;
+  --border: #33333b;
+  --text: #ececee;
+  --text-muted: #9a9aa3;
+  --accent: #928ee8;
+  color-scheme: dark;
 }
 
 * {
@@ -42,6 +55,8 @@ body {
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  opacity: 0;
+  transition: opacity 0.15s;
 }
 
 #app {
@@ -450,4 +465,26 @@ body {
   background: var(--surface-2);
   border-radius: 999px;
   padding: 1px 7px;
+}
+
+/* ── Theme toggle ────────────────────────────────────────────── */
+.theme-toggle {
+  margin-left: auto;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  align-self: center;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+  background: var(--surface);
 }
