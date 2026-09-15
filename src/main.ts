@@ -2,7 +2,7 @@ import './styles.css';
 import { openDatabase } from './db/schema';
 import { createRepo } from './db/repo';
 import { createStore } from './state/store';
-import { createTabAdapter } from './tabs/adapter';
+import { tryCreateTabAdapter } from './tabs/adapter';
 import { createBoardView } from './ui/board/board-view';
 import { createSidebarView } from './ui/sidebar/sidebar-view';
 
@@ -31,12 +31,8 @@ async function bootstrap(): Promise<void> {
   if (boardRoot) createBoardView(store).mount(boardRoot);
 
   // Sidebar (graceful null when chrome.tabs absent — e.g. served dist smoke)
-  const tabAdapter =
-    typeof chrome !== 'undefined' && chrome?.tabs
-      ? createTabAdapter(chrome.tabs)
-      : null;
   const sidebarRoot = app.querySelector<HTMLElement>('#sidebar-root');
-  if (sidebarRoot) createSidebarView(tabAdapter).mount(sidebarRoot);
+  if (sidebarRoot) createSidebarView(tryCreateTabAdapter()).mount(sidebarRoot);
 }
 
 bootstrap().catch((error: unknown) => {

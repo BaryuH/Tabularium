@@ -57,13 +57,14 @@ export function createSidebarView(adapter: TabAdapter | null): SidebarView {
         render();
         return;
       }
-      adapter.queryCurrentWindow().then((result) => {
+      // Chain: query settles → render → subscribe (no race with initial fetch).
+      void adapter.queryCurrentWindow().then((result) => {
         tabs = result;
         render();
-      });
-      adapter.subscribe((updated) => {
-        tabs = updated;
-        render();
+        adapter.subscribe((updated) => {
+          tabs = updated;
+          render();
+        });
       });
     },
   };

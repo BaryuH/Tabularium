@@ -76,11 +76,14 @@ describe('subscribe', () => {
     expect(listener).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ id: 1 })]));
   });
 
-  it('stops delivering after unsubscribe', async () => {
+  it('stops delivering after unsubscribe (all four events detached)', async () => {
     const listener = vi.fn();
     const unsub = adapter.subscribe(listener);
     unsub();
     expect(api.onCreated.count).toBe(0);
+    expect(api.onRemoved.count).toBe(0);
+    expect(api.onUpdated.count).toBe(0);
+    expect(api.onActivated.count).toBe(0);
   });
 });
 

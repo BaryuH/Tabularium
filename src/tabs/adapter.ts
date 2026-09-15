@@ -62,8 +62,12 @@ export function createTabAdapter(api: ChromeTabsApi): TabAdapter {
     queryCurrentWindow,
 
     subscribe(listener) {
+      let generation = 0;
       const refresh = (): void => {
-        void queryCurrentWindow().then(listener);
+        const gen = ++generation;
+        void queryCurrentWindow().then((tabs) => {
+          if (gen === generation) listener(tabs);
+        });
       };
       api.onCreated.addListener(refresh);
       api.onRemoved.addListener(refresh);
@@ -85,4 +89,15 @@ export function createTabAdapter(api: ChromeTabsApi): TabAdapter {
       await api.create({ url });
     },
   };
+}
+
+/**
+ * Try to build a TabAdapter from the global `chrome.tabs` if available.
+ * Returns `null` outside an extension context (e.g. served-dist smoke).
+ * This is the only place that reads the global `chrome` object so that
+ * no chrome.* leaks into UI or entry-point code (AGENTS.md §3).
+ */
+export function tryCreateTabAdapter(): TabAdapter | null {
+  if (typeof chrome === 'undefined' || !chrome.tabs) return null;
+  return createTabAdapter(chrome.tabs);
 }
