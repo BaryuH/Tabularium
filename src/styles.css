@@ -368,3 +368,86 @@ body {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
+
+/* ── Sidebar tab list ───────────────────────────────────────── */
+.stab-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  cursor: grab;
+  transition: background 0.15s;
+}
+
+.stab:hover {
+  background: var(--surface-2);
+}
+
+.stab--active {
+  background: var(--surface-2);
+}
+
+.stab__fav {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+.stab__fav--placeholder {
+  background: var(--surface-2);
+}
+
+.stab__fav--broken {
+  visibility: hidden;
+}
+
+.stab__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.stab__title {
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stab__host {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stab-empty {
+  margin: 0;
+  padding: 16px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.sidebar__count {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  vertical-align: middle;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 1px 7px;
+}

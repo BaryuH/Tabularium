@@ -2,7 +2,9 @@ import './styles.css';
 import { openDatabase } from './db/schema';
 import { createRepo } from './db/repo';
 import { createStore } from './state/store';
+import { createTabAdapter } from './tabs/adapter';
 import { createBoardView } from './ui/board/board-view';
+import { createSidebarView } from './ui/sidebar/sidebar-view';
 
 const LAYOUT = `
   <div class="layout">
@@ -10,10 +12,7 @@ const LAYOUT = `
       <span class="brand__name">Tabularium</span>
       <span class="brand__tag">your tabs, filed away</span>
     </header>
-    <aside class="sidebar">
-      <h2 class="sidebar__title">Open tabs</h2>
-      <div class="placeholder">Live tab list arrives in M5.</div>
-    </aside>
+    <aside class="sidebar" id="sidebar-root"></aside>
     <main class="board" id="board-root"></main>
   </div>
 `;
@@ -27,8 +26,17 @@ async function bootstrap(): Promise<void> {
   if (!app) return;
   app.innerHTML = LAYOUT;
 
+  // Board
   const boardRoot = app.querySelector<HTMLElement>('#board-root');
   if (boardRoot) createBoardView(store).mount(boardRoot);
+
+  // Sidebar (graceful null when chrome.tabs absent — e.g. served dist smoke)
+  const tabAdapter =
+    typeof chrome !== 'undefined' && chrome?.tabs
+      ? createTabAdapter(chrome.tabs)
+      : null;
+  const sidebarRoot = app.querySelector<HTMLElement>('#sidebar-root');
+  if (sidebarRoot) createSidebarView(tabAdapter).mount(sidebarRoot);
 }
 
 bootstrap().catch((error: unknown) => {

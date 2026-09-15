@@ -8,7 +8,8 @@
  * user types.
  */
 import { iconPlus, iconTrash, iconX } from '../icons';
-import type { Card, Column, Board } from '../../types';
+import { escapeHtml, hostOf } from '../../util';
+import type { Board, Card, Column } from '../../types';
 import type { Store } from '../../state/store';
 
 type Editing =
@@ -19,22 +20,6 @@ type Editing =
 
 export interface BoardView {
   mount(root: HTMLElement): void;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function hostOf(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '');
-  } catch {
-    return url;
-  }
 }
 
 export function createBoardView(store: Store): BoardView {
