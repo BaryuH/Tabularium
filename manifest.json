@@ -12,6 +12,12 @@
     "newtab": "index.html"
   },
   "permissions": ["tabs"],
+  "commands": {
+    "save-active-tab": {
+      "suggested_key": { "default": "Alt+S", "mac": "Command+Shift+S" },
+      "description": "Save active tab to Tabularium"
+    }
+  },
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",

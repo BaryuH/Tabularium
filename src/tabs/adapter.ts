@@ -101,3 +101,16 @@ export function tryCreateTabAdapter(): TabAdapter | null {
   if (typeof chrome === 'undefined' || !chrome.tabs) return null;
   return createTabAdapter(chrome.tabs);
 }
+
+/**
+ * Listen for change broadcasts from the service worker (M9 quick-save).
+ * Gracefully no-ops outside an extension context.
+ */
+export function onExternalChange(callback: () => void): void {
+  if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) return;
+  chrome.runtime.onMessage.addListener((msg: unknown) => {
+    if (msg && typeof msg === 'object' && 'type' in msg && msg.type === 'tabularium:external-change') {
+      callback();
+    }
+  });
+}
