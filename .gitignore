@@ -1,0 +1,43 @@
+# ── Dependencies ────────────────────────────────────────────────
+node_modules/
+
+# ── Build output ────────────────────────────────────────────────
+dist/
+build/
+*.local
+
+# ── Vite / tooling cache ────────────────────────────────────────
+.vite/
+node_modules/.vite/
+*.tsbuildinfo
+coverage/
+
+# ── Environment & secrets ───────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Logs ────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── Editor / OS cruft ───────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Installed agent skills (managed by `npx skills add`) ────────
+.agents/
+.claude/
+
+# ── Markdown: hide every .md except operational + spec/plan docs ─
+*.md
+!README.md
+!AGENTS.md
+!docs/superpowers/specs/*.md
+!docs/superpowers/plans/*.md
