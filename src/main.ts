@@ -1,14 +1,21 @@
 import './styles.css';
+import { showToast } from './ui/toast';
 import { openDatabase } from './db/schema';
 import { createRepo } from './db/repo';
 import { createStore } from './state/store';
 import { tryCreateTabAdapter, onExternalChange } from './tabs/adapter';
+import { resolveTarget } from './tabs/resolve';
 import { applyTheme, revealBody } from './theme';
 import { createBoardView } from './ui/board/board-view';
 import { createSidebarView } from './ui/sidebar/sidebar-view';
 import { setupDnD } from './dnd';
-import { resolveTarget } from './tabs/resolve';
 import type { ThemePref } from './types';
+
+// Global error surface: show a non-blocking toast for unhandled async errors.
+window.addEventListener('unhandledrejection', (event) => {
+  showToast(event.reason instanceof Error ? event.reason.message : 'Something went wrong');
+  event.preventDefault();
+});
 
 const LAYOUT = `
   <div class="layout">

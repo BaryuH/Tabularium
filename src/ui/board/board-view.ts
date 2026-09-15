@@ -7,16 +7,18 @@
  * store changes (never on keystrokes), the edit <input> keeps focus while the
  * user types.
  */
-import { iconPlus, iconTrash, iconX } from '../icons';
+import { iconPlus, iconTrash, iconX, iconTask, iconNote } from '../icons';
 import { escapeHtml, hostOf } from '../../util';
-import type { Board, Card, Column } from '../../types';
+import type { Board, Card, CardKind, Column } from '../../types';
 import type { Store } from '../../state/store';
 
 type Editing =
   | { kind: 'new-board' }
   | { kind: 'rename-board'; id: string }
   | { kind: 'new-column' }
-  | { kind: 'rename-column'; id: string };
+  | { kind: 'rename-column'; id: string }
+  | { kind: 'new-task'; columnId: string }
+  | { kind: 'new-note'; columnId: string };
 
 export interface BoardViewOptions {
   onCardClick?: (url: string) => void;
@@ -34,18 +36,42 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     `<input class="editing-input" type="text" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" autocomplete="off" spellcheck="false" />`;
 
   const cardHtml = (card: Card): string => {
-    const favicon = card.favIconUrl
-      ? `<img class="card__fav" src="${escapeHtml(card.favIconUrl)}" alt="" width="16" height="16" />`
-      : `<span class="card__fav card__fav--placeholder"></span>`;
-    const label = card.title.trim() || card.url;
-    return `<article class="card" draggable="true" data-id="${card.id}">
-      ${favicon}
+    const kind: CardKind = card.kind ?? 'tab';
+    let indicator: string;
+    if (kind === 'task') {
+      indicator = `<span class="card__icon card__icon--task">${iconTask}</span>`;
+    } else if (kind === 'note') {
+      indicator = `<span class="card__icon card__icon--note">${iconNote}</span>`;
+    } else {
+      indicator = card.favIconUrl
+        ? `<img class="card__fav" src="${escapeHtml(card.favIconUrl)}" alt="" width="16" height="16" />`
+        : `<span class="card__fav card__fav--placeholder"></span>`;
+    }
+    const label = card.title.trim() || card.url || '(untitled)';
+    const hostLine = kind === 'tab' && card.url
+      ? `<span class="card__host">${escapeHtml(hostOf(card.url))}</span>`
+      : '';
+    return `<article class="card card--${kind}" draggable="true" tabindex="0" role="link" data-id="${card.id}">
+      ${indicator}
       <span class="card__body">
         <span class="card__title">${escapeHtml(label)}</span>
-        <span class="card__host">${escapeHtml(hostOf(card.url))}</span>
+        ${hostLine}
       </span>
       <button class="icon-btn icon-btn--sm card__del" data-action="delete-card" data-id="${card.id}" title="Remove">${iconX}</button>
     </article>`;
+  };
+
+  const columnFooterHtml = (columnId: string): string => {
+    if (editing?.kind === 'new-task' && editing.columnId === columnId) {
+      return `<div class="column__add-row">${inputHtml('', 'Task title')}</div>`;
+    }
+    if (editing?.kind === 'new-note' && editing.columnId === columnId) {
+      return `<div class="column__add-row">${inputHtml('', 'Note')}</div>`;
+    }
+    return `<div class="column__add-row">
+      <button class="column__add-btn" data-action="add-task" data-id="${columnId}" title="Add task">${iconTask}<span>Task</span></button>
+      <button class="column__add-btn" data-action="add-note" data-id="${columnId}" title="Add note">${iconNote}<span>Note</span></button>
+    </div>`;
   };
 
   const columnHtml = (column: Column): string => {
@@ -56,7 +82,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         : `<button class="column__name" data-action="rename-column" data-id="${column.id}" title="Rename column">${escapeHtml(column.name)}</button>`;
     const body = cards.length
       ? cards.map(cardHtml).join('')
-      : `<p class="column__empty">No tabs yet</p>`;
+      : `<p class="column__empty">Drop tabs here, or add a task / note below.</p>`;
     return `<section class="column" data-column-id="${column.id}">
       <header class="column__head" draggable="true">
         ${name}
@@ -64,6 +90,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         <button class="icon-btn icon-btn--sm column__del" data-action="delete-column" data-id="${column.id}" title="Delete column">${iconTrash}</button>
       </header>
       <div class="column__cards">${body}</div>
+      ${columnFooterHtml(column.id)}
     </section>`;
   };
 
@@ -139,6 +166,12 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       case 'rename-column':
         await store.renameColumn(current.id, name);
         break;
+      case 'new-task':
+        await store.createCard(current.columnId, { url: '', title: name, kind: 'task' });
+        break;
+      case 'new-note':
+        await store.createCard(current.columnId, { url: '', title: name, kind: 'note' });
+        break;
     }
   };
 
@@ -213,18 +246,30 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       case 'delete-card':
         if (id) void store.deleteCard(id);
         break;
+      case 'add-task':
+        if (id) setEditing({ kind: 'new-task', columnId: id });
+        break;
+      case 'add-note':
+        if (id) setEditing({ kind: 'new-note', columnId: id });
+        break;
     }
   };
 
   const onKeydown = (event: KeyboardEvent): void => {
     const target = event.target as HTMLElement;
-    if (!target.matches('.editing-input')) return;
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      commit((target as HTMLInputElement).value);
-    } else if (event.key === 'Escape') {
-      event.preventDefault();
-      setEditing(null);
+    // Editing input
+    if (target.matches('.editing-input')) {
+      if (event.key === 'Enter') { event.preventDefault(); commit((target as HTMLInputElement).value); }
+      else if (event.key === 'Escape') { event.preventDefault(); setEditing(null); }
+      return;
+    }
+    // Card keyboard activation (a11y)
+    if (event.key === 'Enter' && target.closest('.card') && !target.closest('[data-action]')) {
+      const card = target.closest<HTMLElement>('.card');
+      if (card?.dataset.id && opts?.onCardClick) {
+        const cardData = store.getState().cards[card.dataset.id];
+        if (cardData) opts.onCardClick(cardData.url);
+      }
     }
   };
 
