@@ -3,7 +3,7 @@
   "name": "Tabularium",
   "version": "0.1.0",
   "description": "A Kanban dashboard for your browser tabs, on every New Tab.",
-  "minimum_chrome_version": "110",
+  "minimum_chrome_version": "119",
   "background": {
     "service_worker": "src/background.ts",
     "type": "module"
