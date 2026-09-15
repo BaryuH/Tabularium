@@ -6,7 +6,7 @@
  * feed a write are done in their own read transaction first, then the write
  * runs in a fresh transaction issuing all its requests synchronously.
  */
-import { bySortOrder, nextOrder, sequentialOrders } from './order';
+import { ORDER_STEP, bySortOrder, nextOrder, sequentialOrders } from './order';
 import { DB_VERSION, INDEX, STORE } from './schema';
 import type { Board, Card, Column, Meta, NewCard, Snapshot } from '../types';
 
@@ -88,11 +88,17 @@ export function createRepo(db: IDBDatabase): Repo {
       createdAt: now,
       updatedAt: now,
     };
-    const tx = db.transaction(STORE.boards, 'readwrite');
+    // Spec decision 8: board + its default Inbox column are written atomically.
+    const inbox: Column = {
+      id: crypto.randomUUID(),
+      boardId: board.id,
+      name: 'Inbox',
+      order: ORDER_STEP,
+    };
+    const tx = db.transaction([STORE.boards, STORE.columns], 'readwrite');
     tx.objectStore(STORE.boards).put(board);
+    tx.objectStore(STORE.columns).put(inbox);
     await txDone(tx);
-    // Spec decision 8: every new board gets a default Inbox column.
-    await createColumn(board.id, 'Inbox');
     return board;
   };
 
@@ -320,12 +326,42 @@ export function createRepo(db: IDBDatabase): Repo {
     };
   };
 
-  /** Seed a default board (+ Inbox) and active-board pointer on first run. */
+  /**
+   * Seed a default board (+ Inbox) and active-board pointer on first run.
+   * The empty-check and writes share one readwrite transaction so concurrent
+   * callers (e.g. a New Tab page and the service worker) cannot double-seed:
+   * IndexedDB serializes readwrite transactions on the same store.
+   */
   const ensureSeed = async (): Promise<void> => {
-    const boards = await listBoards();
-    if (boards.length > 0) return;
-    const board = await createBoard('My Board');
-    await setMeta({ activeBoardId: board.id });
+    const { promise, resolve, reject } = Promise.withResolvers<void>();
+    const tx = db.transaction([STORE.boards, STORE.columns, STORE.meta], 'readwrite');
+    const boardsStore = tx.objectStore(STORE.boards);
+    const countReq = boardsStore.count();
+    countReq.onsuccess = () => {
+      if (countReq.result > 0) return;
+      const now = Date.now();
+      const board: Board = {
+        id: crypto.randomUUID(),
+        name: 'My Board',
+        order: ORDER_STEP,
+        createdAt: now,
+        updatedAt: now,
+      };
+      const inbox: Column = {
+        id: crypto.randomUUID(),
+        boardId: board.id,
+        name: 'Inbox',
+        order: ORDER_STEP,
+      };
+      const meta: Meta = { activeBoardId: board.id, theme: 'system', schemaVersion: DB_VERSION };
+      boardsStore.put(board);
+      tx.objectStore(STORE.columns).put(inbox);
+      tx.objectStore(STORE.meta).put(meta, META_KEY);
+    };
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+    return promise;
   };
 
   return {
