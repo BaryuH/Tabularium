@@ -8,6 +8,7 @@
  */
 import { ORDER_STEP, bySortOrder, nextOrder, sequentialOrders } from './order';
 import { DB_VERSION, INDEX, STORE } from './schema';
+import { indexById } from '../util';
 import type { Board, Card, Column, Meta, NewCard, Snapshot } from '../types';
 
 const META_KEY = 'app';
@@ -53,12 +54,6 @@ function txDone(tx: IDBTransaction): Promise<void> {
   tx.onerror = () => reject(tx.error);
   tx.onabort = () => reject(tx.error);
   return promise;
-}
-
-function indexById<T extends { id: string }>(items: readonly T[]): Record<string, T> {
-  const out: Record<string, T> = {};
-  for (const item of items) out[item.id] = item;
-  return out;
 }
 
 function defaultMeta(): Meta {
