@@ -7,6 +7,7 @@ import { applyTheme, revealBody } from './theme';
 import { createBoardView } from './ui/board/board-view';
 import { createSidebarView } from './ui/sidebar/sidebar-view';
 import { setupDnD } from './dnd';
+import { resolveTarget } from './tabs/resolve';
 import type { ThemePref } from './types';
 
 const LAYOUT = `
@@ -36,13 +37,25 @@ async function bootstrap(): Promise<void> {
   if (!app) return;
   app.innerHTML = LAYOUT;
 
-  // Board
+  // Board + card-click (activate matching tab or open new)
+  const tabAdapter = tryCreateTabAdapter();
   const boardRoot = app.querySelector<HTMLElement>('#board-root');
-  if (boardRoot) createBoardView(store).mount(boardRoot);
+  if (boardRoot) {
+    createBoardView(store, {
+      onCardClick: tabAdapter
+        ? async (url) => {
+            const tabs = await tabAdapter.queryCurrentWindow();
+            const result = resolveTarget(url, tabs);
+            if (result.action === 'activate') await tabAdapter.activate(result.tabId);
+            else await tabAdapter.openUrl(result.url);
+          }
+        : (url) => { window.open(url, '_blank'); },
+    }).mount(boardRoot);
+  }
 
   // Sidebar
   const sidebarRoot = app.querySelector<HTMLElement>('#sidebar-root');
-  if (sidebarRoot) createSidebarView(tryCreateTabAdapter()).mount(sidebarRoot);
+  if (sidebarRoot) createSidebarView(tabAdapter).mount(sidebarRoot);
 
   // Drag-and-drop (delegated on .layout, spans sidebar + board)
   const layout = app.querySelector<HTMLElement>('.layout');

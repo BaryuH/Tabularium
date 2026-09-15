@@ -18,11 +18,15 @@ type Editing =
   | { kind: 'new-column' }
   | { kind: 'rename-column'; id: string };
 
+export interface BoardViewOptions {
+  onCardClick?: (url: string) => void;
+}
+
 export interface BoardView {
   mount(root: HTMLElement): void;
 }
 
-export function createBoardView(store: Store): BoardView {
+export function createBoardView(store: Store, opts?: BoardViewOptions): BoardView {
   let root: HTMLElement | null = null;
   let editing: Editing | null = null;
 
@@ -169,8 +173,20 @@ export function createBoardView(store: Store): BoardView {
   };
 
   const onClick = (event: MouseEvent): void => {
-    const el = (event.target as HTMLElement).closest<HTMLElement>('[data-action]');
-    if (!el || !root?.contains(el)) return;
+    const actionEl = (event.target as HTMLElement).closest<HTMLElement>('[data-action]');
+    if (actionEl && root?.contains(actionEl)) {
+      handleAction(actionEl);
+      return;
+    }
+    // Card body click (no data-action ancestor) → onCardClick
+    const card = (event.target as HTMLElement).closest<HTMLElement>('.card');
+    if (card?.dataset.id && opts?.onCardClick) {
+      const cardData = store.getState().cards[card.dataset.id];
+      if (cardData) opts.onCardClick(cardData.url);
+    }
+  };
+
+  const handleAction = (el: HTMLElement): void => {
     const id = el.dataset.id;
     switch (el.dataset.action) {
       case 'switch-board':
