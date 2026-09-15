@@ -488,3 +488,33 @@ body {
   color: var(--text);
   background: var(--surface);
 }
+
+/* ── Drag-and-drop indicators ────────────────────────────────── */
+.column--drop-target {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.card--drop-before {
+  box-shadow: 0 -2px 0 0 var(--accent);
+}
+
+.card--drop-after {
+  box-shadow: 0 2px 0 0 var(--accent);
+}
+
+.column--dragging {
+  opacity: 0.35;
+}
+
+.stab--dragging {
+  opacity: 0.35;
+}
+
+[draggable="true"] {
+  cursor: grab;
+}
+
+[draggable="true"]:active {
+  cursor: grabbing;
+}

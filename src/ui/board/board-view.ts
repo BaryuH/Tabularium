@@ -34,7 +34,7 @@ export function createBoardView(store: Store): BoardView {
       ? `<img class="card__fav" src="${escapeHtml(card.favIconUrl)}" alt="" width="16" height="16" />`
       : `<span class="card__fav card__fav--placeholder"></span>`;
     const label = card.title.trim() || card.url;
-    return `<article class="card" data-id="${card.id}">
+    return `<article class="card" draggable="true" data-id="${card.id}">
       ${favicon}
       <span class="card__body">
         <span class="card__title">${escapeHtml(label)}</span>
@@ -53,8 +53,8 @@ export function createBoardView(store: Store): BoardView {
     const body = cards.length
       ? cards.map(cardHtml).join('')
       : `<p class="column__empty">No tabs yet</p>`;
-    return `<section class="column">
-      <header class="column__head">
+    return `<section class="column" data-column-id="${column.id}">
+      <header class="column__head" draggable="true">
         ${name}
         <span class="column__count">${cards.length}</span>
         <button class="icon-btn icon-btn--sm column__del" data-action="delete-column" data-id="${column.id}" title="Delete column">${iconTrash}</button>

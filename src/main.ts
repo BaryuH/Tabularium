@@ -6,6 +6,7 @@ import { tryCreateTabAdapter } from './tabs/adapter';
 import { applyTheme, revealBody } from './theme';
 import { createBoardView } from './ui/board/board-view';
 import { createSidebarView } from './ui/sidebar/sidebar-view';
+import { setupDnD } from './dnd';
 import type { ThemePref } from './types';
 
 const LAYOUT = `
@@ -42,6 +43,10 @@ async function bootstrap(): Promise<void> {
   // Sidebar
   const sidebarRoot = app.querySelector<HTMLElement>('#sidebar-root');
   if (sidebarRoot) createSidebarView(tryCreateTabAdapter()).mount(sidebarRoot);
+
+  // Drag-and-drop (delegated on .layout, spans sidebar + board)
+  const layout = app.querySelector<HTMLElement>('.layout');
+  if (layout) setupDnD(layout, store);
 
   // Theme toggle
   const toggle = app.querySelector<HTMLButtonElement>('#theme-toggle');
