@@ -15,6 +15,8 @@ export interface Column {
   order: number;
 }
 
+export type CardKind = 'tab' | 'task' | 'note';
+
 export interface Card {
   id: string;
   columnId: string;
@@ -23,7 +25,9 @@ export interface Card {
   title: string;
   favIconUrl?: string;
   savedAt: number;
-  /** Reserved for v2 (notes); never written in v1. */
+  /** Card type: 'tab' (saved browser tab), 'task' (user-created action item), 'note' (free-form reference). */
+  kind?: CardKind;
+  /** Reserved for v2 (rich notes body). */
   note?: string;
 }
 
@@ -44,4 +48,4 @@ export interface Snapshot {
 }
 
 /** Fields captured when saving a tab as a card. */
-export type NewCard = Pick<Card, 'url' | 'title'> & Partial<Pick<Card, 'favIconUrl'>>;
+export type NewCard = Pick<Card, 'url' | 'title'> & Partial<Pick<Card, 'favIconUrl' | 'kind'>>;
