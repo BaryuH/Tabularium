@@ -1,0 +1,91 @@
+import { beforeEach, expect, it } from 'vitest';
+import { openDatabase } from '../src/db/schema';
+import { createRepo, type Repo } from '../src/db/repo';
+import { createStore, type Store } from '../src/state/store';
+
+let repo: Repo;
+let store: Store;
+
+beforeEach(async () => {
+  const db = await openDatabase(`test-${crypto.randomUUID()}`);
+  repo = createRepo(db);
+  store = createStore(repo);
+  await store.hydrate();
+});
+
+it('hydrate seeds and loads the default board with an Inbox column', () => {
+  const boards = store.boardsSorted();
+  expect(boards).toHaveLength(1);
+  expect(store.columnsOfBoard(boards[0].id).map((c) => c.name)).toEqual(['Inbox']);
+  expect(store.activeBoard()?.id).toBe(boards[0].id);
+});
+
+it('createBoard reflects in state and persists', async () => {
+  await store.createBoard('Work');
+  expect(store.boardsSorted().map((b) => b.name)).toContain('Work');
+
+  // A second store over the same repo observes the persisted board.
+  const other = createStore(repo);
+  await other.applyExternalChange();
+  expect(other.boardsSorted().map((b) => b.name)).toContain('Work');
+});
+
+it('notifies subscribers on mutation and stops after unsubscribe', async () => {
+  const boardId = store.boardsSorted()[0].id;
+  let calls = 0;
+  const unsubscribe = store.subscribe(() => {
+    calls += 1;
+  });
+  await store.createColumn(boardId, 'Todo');
+  expect(calls).toBeGreaterThan(0);
+
+  unsubscribe();
+  const settled = calls;
+  await store.createColumn(boardId, 'Done');
+  expect(calls).toBe(settled);
+});
+
+it('createCard and reorderCards yield ordered cards', async () => {
+  const inbox = store.columnsOfBoard(store.boardsSorted()[0].id)[0];
+  const a = await store.createCard(inbox.id, { url: 'a', title: 'a' });
+  const b = await store.createCard(inbox.id, { url: 'b', title: 'b' });
+  expect(store.cardsOfColumn(inbox.id).map((c) => c.id)).toEqual([a.id, b.id]);
+
+  await store.reorderCards(inbox.id, [b.id, a.id]);
+  expect(store.cardsOfColumn(inbox.id).map((c) => c.id)).toEqual([b.id, a.id]);
+});
+
+it('moveCard relocates a card across columns in state', async () => {
+  const boardId = store.boardsSorted()[0].id;
+  const inbox = store.columnsOfBoard(boardId)[0];
+  const todo = await store.createColumn(boardId, 'Todo');
+  const card = await store.createCard(inbox.id, { url: 'a', title: 'a' });
+
+  await store.moveCard(card.id, todo.id, [card.id]);
+  expect(store.cardsOfColumn(inbox.id)).toEqual([]);
+  expect(store.cardsOfColumn(todo.id).map((c) => c.id)).toEqual([card.id]);
+});
+
+it('setActiveBoard and setTheme update meta', async () => {
+  const second = await store.createBoard('Second');
+  await store.setActiveBoard(second.id);
+  expect(store.activeBoard()?.id).toBe(second.id);
+
+  await store.setTheme('dark');
+  expect(store.getState().meta.theme).toBe('dark');
+});
+
+it('deleteBoard removes it from state', async () => {
+  const second = await store.createBoard('Second');
+  await store.deleteBoard(second.id);
+  expect(store.boardsSorted().some((b) => b.id === second.id)).toBe(false);
+});
+
+it('applyExternalChange re-reads writes made directly against the repo', async () => {
+  const inbox = store.columnsOfBoard(store.boardsSorted()[0].id)[0];
+  await repo.createCard(inbox.id, { url: 'ext', title: 'ext' }); // bypasses the store
+  expect(store.cardsOfColumn(inbox.id)).toHaveLength(0); // not yet in memory
+
+  await store.applyExternalChange();
+  expect(store.cardsOfColumn(inbox.id).map((c) => c.title)).toEqual(['ext']);
+});
