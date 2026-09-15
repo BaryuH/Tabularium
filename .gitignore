@@ -1,16 +1,28 @@
 # ── Dependencies ────────────────────────────────────────────────
 node_modules/
+.pnp/
+.pnp.js
 
-# ── Build output ────────────────────────────────────────────────
+# ── Build & packaging output ────────────────────────────────────
 dist/
 build/
+out/
+*.crx
+*.pem
+*.zip
 *.local
 
-# ── Vite / tooling cache ────────────────────────────────────────
+# ── Vite / tooling cache & coverage ─────────────────────────────
 .vite/
 node_modules/.vite/
 *.tsbuildinfo
+vite.config.ts.timestamp-*
+vitest.config.ts.timestamp-*
 coverage/
+.nyc_output/
+*.lcov
+.eslintcache
+.cache/
 
 # ── Environment & secrets ───────────────────────────────────────
 .env
@@ -24,16 +36,49 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# ── Editor / OS cruft ───────────────────────────────────────────
-.vscode/
+# ── Editor / IDE cruft ───────────────────────────────────────────
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea/
+*.code-workspace
+.cursor/
+.windsurf/
+*.sublime-project
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+
+# ── OS cruft ────────────────────────────────────────────────────
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
 Thumbs.db
-desktop.ini
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# ── Temporary & scratch files ────────────────────────────────────
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
 
 # ── Installed agent skills (managed by `npx skills add`) ────────
 .agents/
 .claude/
+skills-lock.json
 
 # ── Markdown: hide every .md except operational + spec/plan docs ─
 *.md

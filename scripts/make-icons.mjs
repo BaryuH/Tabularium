@@ -51,6 +51,6 @@ function png(size, [r, g, b]) {
   ]);
 }
 
-mkdirSync('icons', { recursive: true });
-for (const s of SIZES) writeFileSync(`icons/icon${s}.png`, png(s, COLOR));
-console.log('icons written:', SIZES.map((s) => `icons/icon${s}.png`).join(', '));
+mkdirSync('public/icons', { recursive: true });
+for (const s of SIZES) writeFileSync(`public/icons/icon${s}.png`, png(s, COLOR));
+console.log('icons written:', SIZES.map((s) => `public/icons/icon${s}.png`).join(', '));

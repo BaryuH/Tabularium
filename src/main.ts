@@ -2,7 +2,7 @@ import './styles.css';
 import { openDatabase } from './db/schema';
 import { createRepo } from './db/repo';
 import { createStore } from './state/store';
-import { tryCreateTabAdapter } from './tabs/adapter';
+import { tryCreateTabAdapter, onExternalChange } from './tabs/adapter';
 import { applyTheme, revealBody } from './theme';
 import { createBoardView } from './ui/board/board-view';
 import { createSidebarView } from './ui/sidebar/sidebar-view';
@@ -32,6 +32,9 @@ async function bootstrap(): Promise<void> {
   // Apply theme before first paint, then reveal body (anti-FOUC).
   applyTheme(store.getState().meta.theme);
   revealBody();
+
+  // Refresh state when the service worker saves a tab (M9 quick-save).
+  onExternalChange(() => { void store.applyExternalChange(); });
 
   const app = document.querySelector<HTMLElement>('#app');
   if (!app) return;
@@ -79,6 +82,11 @@ async function bootstrap(): Promise<void> {
     });
     updateToggle();
   }
+
+  // External change broadcast from background (e.g. quick-save shortcut)
+  onExternalChange(() => {
+    void store.hydrate();
+  });
 }
 
 bootstrap().catch((error: unknown) => {
