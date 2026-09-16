@@ -2,10 +2,13 @@
   --bg: #161619;
   --surface: #1e1e22;
   --surface-2: #26262c;
+  --column-bg: #1e1e22;
   --border: #33333b;
   --text: #ececee;
   --text-muted: #9a9aa3;
   --accent: #928ee8;
+  --card-shadow: none;
+  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.25);
   --font-sans: 'Geist Variable', 'Geist', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
   --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --radius: 10px;
@@ -15,13 +18,16 @@
 }
 
 :root[data-theme="light"] {
-  --bg: #faf9f7;
+  --bg: #eef2f6;
   --surface: #ffffff;
-  --surface-2: #f2f1ed;
-  --border: #e7e5df;
-  --text: #201f1c;
-  --text-muted: #7a766e;
-  --accent: #5a56c4;
+  --surface-2: #e2e8f0;
+  --column-bg: #f8fafc;
+  --border: #cbd5e1;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --accent: #4f46e5;
+  --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+  --card-shadow-hover: 0 4px 10px rgba(15, 23, 42, 0.08);
   color-scheme: light;
 }
 
@@ -29,10 +35,13 @@
   --bg: #161619;
   --surface: #1e1e22;
   --surface-2: #26262c;
+  --column-bg: #1e1e22;
   --border: #33333b;
   --text: #ececee;
   --text-muted: #9a9aa3;
   --accent: #928ee8;
+  --card-shadow: none;
+  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.25);
   color-scheme: dark;
 }
 
@@ -80,6 +89,7 @@ body {
   align-items: center;
   gap: 12px;
   padding: 12px 24px;
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
   grid-column: 1 / -1;
 }
@@ -343,7 +353,7 @@ body {
   display: flex;
   flex-direction: column;
   max-height: 100%;
-  background: var(--surface);
+  background: var(--column-bg, var(--surface));
   border: 1px solid var(--border);
   border-radius: var(--radius);
   contain: layout style;
@@ -477,10 +487,12 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  box-shadow: var(--card-shadow, none);
   contain: layout;
   animation: card-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
     border-color 0.18s ease,
+    box-shadow 0.18s ease,
     opacity 0.18s ease,
     background-color 0.2s ease;
 }
@@ -488,7 +500,7 @@ body {
 .card:hover {
   border-color: var(--accent);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--card-shadow-hover, 0 2px 8px rgba(0, 0, 0, 0.04));
 }
 
 .card:active {
