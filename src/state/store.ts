@@ -46,6 +46,7 @@ export interface Store {
 
   createCard(columnId: string, data: NewCard): Promise<Card>;
   updateCard(id: string, patch: CardPatch): Promise<void>;
+  toggleTaskComplete(cardId: string): Promise<void>;
   deleteCard(id: string): Promise<void>;
   reorderCards(columnId: string, orderedIds: string[]): Promise<void>;
   moveCard(cardId: string, toColumnId: string, targetOrderedIds: string[]): Promise<void>;
@@ -166,6 +167,14 @@ export function createStore(repo: Repo): Store {
 
     async updateCard(id, patch) {
       await repo.updateCard(id, patch);
+      await refresh();
+    },
+
+    async toggleTaskComplete(cardId) {
+      const card = state.cards[cardId];
+      if (!card) return;
+      const completedAt = card.completedAt ? undefined : Date.now();
+      await repo.updateCard(cardId, { completedAt });
       await refresh();
     },
 
