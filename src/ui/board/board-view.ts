@@ -7,12 +7,15 @@
  * store changes (never on keystrokes), the edit <input> keeps focus while the
  * user types.
  */
-import { iconPlus, iconTrash, iconX, iconTask, iconTaskDone, iconListTodo, iconNote, iconPencil } from '../icons';
+import { iconPlus, iconTrash, iconX, iconTask, iconTaskDone, iconListTodo, iconNote, iconPencil, iconWindow, iconExternalLink } from '../icons';
 import { escapeHtml, formatDateTag, HAS_DATE_PREFIX } from '../../util';
+import { showToast } from '../toast';
 import type { Board, Card, CardKind, Column } from '../../types';
 import type { Store } from '../../state/store';
 import type { NotePanel } from '../note/note-panel';
 import type { CardEditModal } from '../card/card-edit-modal';
+import type { WindowModal } from '../window/window-modal';
+import type { TabAdapter } from '../../tabs/adapter';
 
 const BOARD_ICONS = ['📁', '🏛️', '💼', '🚀', '🎯', '📚', '💡', '🛠️', '🎨', '🔬', '⚡', '🌟', '📌', '☕', '🧠', '🌿'] as const;
 const COLUMN_ICONS = ['📥', '🚀', '🔬', '✅', '⚡', '📋', '📌', '💡', '📚', '🎯', '🌿', '☕', '🔥', '🛠️', '⭐', '📦'] as const;
@@ -31,6 +34,8 @@ export interface BoardViewOptions {
   onCardClick?: (url: string) => void;
   notePanel?: NotePanel;
   cardEditModal?: CardEditModal;
+  windowModal?: WindowModal;
+  tabAdapter?: TabAdapter | null;
 }
 
 export interface BoardView {
@@ -52,6 +57,8 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       indicator = `<button class="card__check" data-action="toggle-task" data-id="${card.id}" title="${isDone ? 'Mark uncompleted' : 'Mark completed'}" aria-label="${isDone ? 'Mark uncompleted' : 'Mark completed'}">${isDone ? iconTaskDone : iconTask}</button>`;
     } else if (kind === 'note') {
       indicator = `<span class="card__icon card__icon--note">${iconNote}</span>`;
+    } else if (kind === 'window') {
+      indicator = `<span class="card__icon card__icon--window">${iconWindow}</span>`;
     } else {
       indicator = card.favIconUrl
         ? `<img class="card__fav" src="${escapeHtml(card.favIconUrl)}" alt="" width="16" height="16" />`
@@ -59,7 +66,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     }
     const rawLabel = card.title.trim() || card.url || '(untitled)';
     let titleHtml: string;
-    if (kind === 'task' || kind === 'note') {
+    if (kind === 'task' || kind === 'note' || kind === 'window') {
       const match = rawLabel.match(HAS_DATE_PREFIX);
       if (match) {
         const dateTag = match[0].trim();
@@ -72,13 +79,36 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     } else {
       titleHtml = `<span class="card__title-text">${escapeHtml(rawLabel)}</span>`;
     }
+
+    const windowMeta =
+      kind === 'window' && card.tabs?.length
+        ? `<span class="card__window-meta">
+            <span class="card__tab-count">${card.tabs.length} tabs</span>
+            <span class="card__fav-strip">${card.tabs
+              .slice(0, 5)
+              .map((t) =>
+                t.favIconUrl
+                  ? `<img class="card__fav-mini" src="${escapeHtml(t.favIconUrl)}" alt="" width="12" height="12" />`
+                  : '',
+              )
+              .join('')}</span>
+          </span>`
+        : '';
+
     const doneCls = isDone ? ' card--done' : '';
+    const restoreBtn =
+      kind === 'window'
+        ? `<button class="icon-btn icon-btn--sm card__action-btn card__restore" data-action="restore-window" data-id="${card.id}" title="Restore window (${card.tabs?.length ?? 0} tabs)">${iconExternalLink}</button>`
+        : '';
+
     return `<article class="card card--${kind}${doneCls}" draggable="true" tabindex="0" role="${kind === 'task' ? 'checkbox' : 'link'}" ${kind === 'task' ? `aria-checked="${isDone}"` : ''} data-id="${card.id}">
       ${indicator}
       <span class="card__body">
         <span class="card__title">${titleHtml}</span>
+        ${windowMeta}
       </span>
       <span class="card__actions">
+        ${restoreBtn}
         <button class="icon-btn icon-btn--sm card__action-btn card__edit" data-action="edit-card" data-id="${card.id}" title="Edit title or link">${iconPencil}</button>
         <button class="icon-btn icon-btn--sm card__action-btn card__del" data-action="delete-card" data-id="${card.id}" title="Remove">${iconX}</button>
       </span>
@@ -95,6 +125,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     return `<div class="column__add-row">
       <button class="column__add-btn" data-action="add-task" data-id="${columnId}" title="Add task">${iconListTodo}<span>Task</span></button>
       <button class="column__add-btn" data-action="add-note" data-id="${columnId}" title="Add note">${iconNote}<span>Note</span></button>
+      <button class="column__add-btn" data-action="stash-window" data-id="${columnId}" title="Stash open tabs here to free RAM">${iconWindow}<span>Window</span></button>
     </div>`;
   };
 
@@ -276,6 +307,10 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     if (card?.dataset.id) {
       const cardData = store.getState().cards[card.dataset.id];
       if (cardData) {
+        if (cardData.kind === 'window') {
+          opts?.windowModal?.open(card.dataset.id);
+          return;
+        }
         if (cardData.kind === 'task' || cardData.kind === 'note') {
           opts?.notePanel?.open(card.dataset.id);
           return;
@@ -285,6 +320,36 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     }
   };
 
+  const stashCurrentWindow = async (columnId: string): Promise<void> => {
+    if (!opts?.tabAdapter) {
+      showToast('Open tabs adapter unavailable in preview mode.');
+      return;
+    }
+    const openTabs = await opts.tabAdapter.queryCurrentWindow();
+    const stashable = openTabs.filter(
+      (t) =>
+        !t.url.startsWith('chrome://') &&
+        !t.url.startsWith('chrome-extension://') &&
+        !t.url.includes(location.host) &&
+        t.url.trim() !== '',
+    );
+    if (stashable.length === 0) {
+      showToast('No external tabs open in this window.');
+      return;
+    }
+
+    const items = stashable.map((t) => ({
+      id: String(t.id),
+      url: t.url,
+      title: t.title,
+      favIconUrl: t.favIconUrl,
+    }));
+
+    await store.saveWindowSession(columnId, items);
+    const tabIds = stashable.map((t) => t.id);
+    await opts.tabAdapter.closeTabs(tabIds);
+    showToast(`Stashed ${items.length} tabs · 0% RAM consumed`);
+  };
   const handleAction = (el: HTMLElement): void => {
     const id = el.dataset.id;
     switch (el.dataset.action) {
@@ -300,8 +365,24 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       case 'delete-board':
         if (id) void handleDeleteBoard(id);
         break;
-      case 'add-column':
-        setEditing({ kind: 'new-column' });
+      case 'restore-window':
+        if (id) {
+          const card = store.getState().cards[id];
+          const urls = card?.tabs?.map((t) => t.url).filter(Boolean) ?? [];
+          if (urls.length > 0) {
+            if (opts?.tabAdapter) {
+              void opts.tabAdapter.createWindow(urls);
+            } else {
+              for (const u of urls) window.open(u, '_blank');
+            }
+            showToast(`Restoring ${urls.length} tabs in a new window`);
+          }
+        }
+        break;
+      case 'stash-window':
+        if (id) {
+          void stashCurrentWindow(id);
+        }
         break;
       case 'rename-column':
         if (id) setEditing({ kind: 'rename-column', id });

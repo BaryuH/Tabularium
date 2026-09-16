@@ -12,11 +12,17 @@ interface SimpleEvent<T> {
   removeListener(callback: T): void;
 }
 
+/** Subset of `chrome.windows` consumed by the adapter. */
+export interface ChromeWindowsApi {
+  create(createData: { url?: string | string[]; focused?: boolean }): Promise<chrome.windows.Window>;
+}
+
 /** Subset of `chrome.tabs` consumed by the adapter. */
 export interface ChromeTabsApi {
   query(queryInfo: { currentWindow?: boolean }): Promise<chrome.tabs.Tab[]>;
   update(tabId: number, properties: { active?: boolean; url?: string }): Promise<chrome.tabs.Tab>;
   create(properties: { url?: string }): Promise<chrome.tabs.Tab>;
+  remove?(tabIds: number | number[]): Promise<void>;
   onCreated: SimpleEvent<(tab: chrome.tabs.Tab) => void>;
   onRemoved: SimpleEvent<(tabId: number, info: chrome.tabs.TabRemoveInfo) => void>;
   onUpdated: SimpleEvent<(tabId: number, info: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => void>;
@@ -40,6 +46,10 @@ export interface TabAdapter {
   activate(tabId: number): Promise<void>;
   openUrl(url: string): Promise<void>;
   openInCurrentTab(url: string): Promise<void>;
+  /** Close tabs by ID to instantly release their RAM. */
+  closeTabs(tabIds: number[]): Promise<void>;
+  /** Restore a list of URLs into a new browser window. */
+  createWindow(urls: string[]): Promise<void>;
 }
 
 function mapTab(tab: chrome.tabs.Tab): TabInfo | null {
@@ -53,7 +63,7 @@ function mapTab(tab: chrome.tabs.Tab): TabInfo | null {
   };
 }
 
-export function createTabAdapter(api: ChromeTabsApi): TabAdapter {
+export function createTabAdapter(api: ChromeTabsApi, windowsApi?: ChromeWindowsApi): TabAdapter {
   const queryCurrentWindow = async (): Promise<TabInfo[]> => {
     const raw = await api.query({ currentWindow: true });
     return raw.map(mapTab).filter((t): t is TabInfo => t !== null);
@@ -99,6 +109,22 @@ export function createTabAdapter(api: ChromeTabsApi): TabAdapter {
         await api.create({ url });
       }
     },
+    async closeTabs(tabIds: number[]) {
+      if (tabIds.length === 0) return;
+      if (api.remove) {
+        await api.remove(tabIds);
+      }
+    },
+    async createWindow(urls: string[]) {
+      if (urls.length === 0) return;
+      if (windowsApi?.create) {
+        await windowsApi.create({ url: urls, focused: true });
+      } else {
+        for (const url of urls) {
+          await api.create({ url });
+        }
+      }
+    },
   };
 }
 
@@ -110,7 +136,8 @@ export function createTabAdapter(api: ChromeTabsApi): TabAdapter {
  */
 export function tryCreateTabAdapter(): TabAdapter | null {
   if (typeof chrome === 'undefined' || !chrome.tabs) return null;
-  return createTabAdapter(chrome.tabs);
+  const windowsApi = typeof chrome.windows !== 'undefined' ? chrome.windows : undefined;
+  return createTabAdapter(chrome.tabs, windowsApi);
 }
 
 /**

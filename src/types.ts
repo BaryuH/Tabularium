@@ -17,7 +17,15 @@ export interface Column {
   order: number;
 }
 
-export type CardKind = 'tab' | 'task' | 'note';
+export type CardKind = 'tab' | 'task' | 'note' | 'window';
+
+/** Single tab entry within a saved window session. */
+export interface WindowTabItem {
+  id: string;
+  url: string;
+  title: string;
+  favIconUrl?: string;
+}
 
 export interface Card {
   id: string;
@@ -27,12 +35,14 @@ export interface Card {
   title: string;
   favIconUrl?: string;
   savedAt: number;
-  /** Card type: 'tab' (saved browser tab), 'task' (user-created action item), 'note' (free-form reference). */
+  /** Card type: 'tab' (single tab), 'task' (to-do), 'note' (memo), 'window' (stashed window session). */
   kind?: CardKind;
   /** Timestamp when a task was marked completed. */
   completedAt?: number;
   /** Reserved for v2 (rich notes body). */
   note?: string;
+  /** List of tabs in a saved window session (kind: 'window'). */
+  tabs?: WindowTabItem[];
 }
 
 export type ThemePref = 'light' | 'dark';
@@ -54,5 +64,5 @@ export interface Snapshot {
   meta: Meta;
 }
 
-/** Fields captured when saving a tab as a card. */
-export type NewCard = Pick<Card, 'url' | 'title'> & Partial<Pick<Card, 'favIconUrl' | 'kind' | 'note'>>;
+/** Fields captured when saving a tab or window session as a card. */
+export type NewCard = Pick<Card, 'url' | 'title'> & Partial<Pick<Card, 'favIconUrl' | 'kind' | 'note' | 'tabs'>>;

@@ -6,8 +6,9 @@
  * In collapsed mode, titles are hidden and only favicons/icons are shown
  * with tooltips; dragging tabs into columns works identically in both modes.
  */
-import { iconChevronLeft, iconSidebar } from '../icons';
+import { iconChevronLeft, iconSidebar, iconWindow } from '../icons';
 import { escapeHtml } from '../../util';
+import { showToast } from '../toast';
 import type { TabAdapter, TabInfo } from '../../tabs/adapter';
 import type { Store } from '../../state/store';
 
@@ -61,13 +62,18 @@ export function createSidebarView(adapter: TabAdapter | null, store: Store): Sid
     }
 
     const count = `<span class="sidebar__count">${tabs.length}</span>`;
+    const stashBtn = !collapsed && tabs.length
+      ? `<button class="icon-btn icon-btn--sm" data-action="stash-sidebar-window" title="Stash all open tabs into first column (free RAM)">${iconWindow}</button>`
+      : '';
     const header = collapsed
       ? `<div class="sidebar__header sidebar__header--collapsed">${toggleBtn}</div>`
       : `<div class="sidebar__header">
           <span class="sidebar__title-text">Open tabs ${count}</span>
-          ${toggleBtn}
+          <div class="sidebar__header-actions" style="display: flex; gap: 4px;">
+            ${stashBtn}
+            ${toggleBtn}
+          </div>
         </div>`;
-
     root.innerHTML = `
       ${header}
       <div class="stab-list">${tabs.length ? tabs.map(tabHtml).join('') : '<p class="stab-empty">No tabs open.</p>'}</div>
@@ -78,8 +84,49 @@ export function createSidebarView(adapter: TabAdapter | null, store: Store): Sid
     });
   };
 
+  const stashWindowFromSidebar = async (): Promise<void> => {
+    if (!adapter) {
+      showToast('Open tabs adapter unavailable in preview mode.');
+      return;
+    }
+    const active = store.activeBoard();
+    if (!active) return;
+    const columns = store.columnsOfBoard(active.id);
+    const targetCol = columns[0];
+    if (!targetCol) return;
+
+    const openTabs = await adapter.queryCurrentWindow();
+    const stashable = openTabs.filter(
+      (t) =>
+        !t.url.startsWith('chrome://') &&
+        !t.url.startsWith('chrome-extension://') &&
+        !t.url.includes(location.host) &&
+        t.url.trim() !== '',
+    );
+    if (stashable.length === 0) {
+      showToast('No external tabs open in this window.');
+      return;
+    }
+
+    const items = stashable.map((t) => ({
+      id: String(t.id),
+      url: t.url,
+      title: t.title,
+      favIconUrl: t.favIconUrl,
+    }));
+
+    await store.saveWindowSession(targetCol.id, items);
+    await adapter.closeTabs(stashable.map((t) => t.id));
+    showToast(`Stashed ${items.length} tabs to ${targetCol.name} · 0% RAM consumed`);
+  };
+
   const onClick = (event: MouseEvent): void => {
     const target = event.target as HTMLElement;
+    if (target.closest('[data-action="stash-sidebar-window"]')) {
+      event.preventDefault();
+      void stashWindowFromSidebar();
+      return;
+    }
     if (target.closest('[data-action="toggle-sidebar"]')) {
       event.preventDefault();
       void store.setSidebarCollapsed(!isCollapsed());

@@ -48,6 +48,10 @@ beforeEach(() => {
       api._tabs.push(t);
       return t;
     }),
+    remove: vi.fn(async (ids) => {
+      const idList = Array.isArray(ids) ? ids : [ids];
+      api._tabs = api._tabs.filter((t) => !idList.includes(t.id));
+    }),
     onCreated: mockEvent(),
     onRemoved: mockEvent(),
     onUpdated: mockEvent(),
@@ -105,5 +109,34 @@ describe('openInCurrentTab', () => {
   it('updates the currently active tab with the given url', async () => {
     await adapter.openInCurrentTab('https://update-current.com');
     expect(api.update).toHaveBeenCalledWith(1, { url: 'https://update-current.com' });
+  });
+});
+
+describe('closeTabs', () => {
+  it('calls chrome.tabs.remove with given tab IDs', async () => {
+    await adapter.closeTabs([1, 2]);
+    expect(api.remove).toHaveBeenCalledWith([1, 2]);
+  });
+
+  it('does nothing when given empty array', async () => {
+    await adapter.closeTabs([]);
+    expect(api.remove).not.toHaveBeenCalled();
+  });
+});
+
+describe('createWindow', () => {
+  it('calls chrome.windows.create when windowsApi is supplied', async () => {
+    const windowsApi = {
+      create: vi.fn(async () => ({} as chrome.windows.Window)),
+    };
+    const customAdapter = createTabAdapter(api, windowsApi);
+    await customAdapter.createWindow(['https://a.com', 'https://b.com']);
+    expect(windowsApi.create).toHaveBeenCalledWith({ url: ['https://a.com', 'https://b.com'], focused: true });
+  });
+
+  it('falls back to chrome.tabs.create for each url when windowsApi is absent', async () => {
+    await adapter.createWindow(['https://x.com', 'https://y.com']);
+    expect(api.create).toHaveBeenCalledWith({ url: 'https://x.com' });
+    expect(api.create).toHaveBeenCalledWith({ url: 'https://y.com' });
   });
 });

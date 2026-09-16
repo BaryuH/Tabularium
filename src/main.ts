@@ -13,6 +13,7 @@ import { createCardEditModal } from './ui/card/card-edit-modal';
 import { createNotePanel } from './ui/note/note-panel';
 import { createSettingsModal } from './ui/settings/settings-modal';
 import { createSidebarView } from './ui/sidebar/sidebar-view';
+import { createWindowModal } from './ui/window/window-modal';
 import { iconGear, iconMoon, iconSun } from './ui/icons';
 import { setupDnD } from './dnd';
 import type { ThemePref } from './types';
@@ -101,11 +102,18 @@ async function bootstrap(): Promise<void> {
 
   // Board + card-click (activate matching tab or open new)
   const tabAdapter = tryCreateTabAdapter();
+
+  // Window session inspector & restore modal
+  const windowModal = createWindowModal(store, tabAdapter);
+  windowModal.mount(app);
+
   const boardRoot = app.querySelector<HTMLElement>('#board-root');
   if (boardRoot) {
     createBoardView(store, {
       notePanel,
       cardEditModal,
+      windowModal,
+      tabAdapter,
       onCardClick: tabAdapter
         ? async (url) => {
             const behavior = store.getState().meta.openBehavior ?? 'new-tab';

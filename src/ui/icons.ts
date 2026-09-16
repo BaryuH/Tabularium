@@ -6,8 +6,10 @@
  * Tree-shaken by Vite so only the imported icons are bundled.
  */
 import {
+  AppWindow,
   CheckSquare,
   Download,
+  ExternalLink,
   ListTodo,
   Moon,
   PanelLeft,
@@ -51,3 +53,5 @@ export const iconSidebar = renderSvg(PanelLeft);
 export const iconChevronLeft = renderSvg(PanelLeftClose);
 export const iconSun = renderSvg(Sun);
 export const iconMoon = renderSvg(Moon);
+export const iconWindow = renderSvg(AppWindow);
+export const iconExternalLink = renderSvg(ExternalLink);

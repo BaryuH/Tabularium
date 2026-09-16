@@ -203,3 +203,19 @@ it('setSidebarCollapsed updates meta.sidebarCollapsed', async () => {
   await store.setSidebarCollapsed(false);
   expect(store.getState().meta.sidebarCollapsed).toBe(false);
 });
+
+it('saveWindowSession creates a card with kind window and tabs array', async () => {
+  const colId = store.columnsOfBoard(store.boardsSorted()[0].id)[0].id;
+  const tabs = [
+    { id: '1', url: 'https://github.com', title: 'GitHub' },
+    { id: '2', url: 'https://linear.app', title: 'Linear' },
+  ];
+  const card = await store.saveWindowSession(colId, tabs, 'Dev Session');
+  expect(card.kind).toBe('window');
+  expect(card.title).toBe('Dev Session');
+  expect(card.tabs).toHaveLength(2);
+  expect(card.tabs![0].title).toBe('GitHub');
+
+  const inCol = store.cardsOfColumn(colId);
+  expect(inCol.find((c) => c.id === card.id)?.tabs).toHaveLength(2);
+});

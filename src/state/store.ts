@@ -7,9 +7,9 @@
  */
 import { bySortOrder } from '../db/order';
 import { DB_VERSION } from '../db/schema';
-import { indexById } from '../util';
+import { formatDateTag, indexById } from '../util';
 import type { CardPatch, Repo } from '../db/repo';
-import type { Board, Card, Column, Meta, NewCard, Snapshot, TabOpenBehavior, ThemePref } from '../types';
+import type { Board, Card, Column, Meta, NewCard, Snapshot, TabOpenBehavior, ThemePref, WindowTabItem } from '../types';
 
 export interface StoreState {
   boards: Record<string, Board>;
@@ -48,11 +48,11 @@ export interface Store {
 
   createCard(columnId: string, data: NewCard): Promise<Card>;
   updateCard(id: string, patch: CardPatch): Promise<void>;
+  saveWindowSession(columnId: string, tabs: WindowTabItem[], title?: string): Promise<Card>;
   toggleTaskComplete(cardId: string): Promise<void>;
   deleteCard(id: string): Promise<void>;
   reorderCards(columnId: string, orderedIds: string[]): Promise<void>;
   moveCard(cardId: string, toColumnId: string, targetOrderedIds: string[]): Promise<void>;
-
   setTheme(theme: ThemePref): Promise<void>;
   setOpenBehavior(behavior: TabOpenBehavior): Promise<void>;
   setSidebarCollapsed(collapsed: boolean): Promise<void>;
@@ -180,10 +180,21 @@ export function createStore(repo: Repo): Store {
       await refresh();
       return card;
     },
-
     async updateCard(id, patch) {
       await repo.updateCard(id, patch);
       await refresh();
+    },
+
+    async saveWindowSession(columnId, tabs, customTitle) {
+      const defaultTitle = `${formatDateTag()} Window (${tabs.length} tabs)`;
+      const card = await repo.createCard(columnId, {
+        url: tabs[0]?.url ?? '',
+        title: customTitle?.trim() || defaultTitle,
+        kind: 'window',
+        tabs,
+      });
+      await refresh();
+      return card;
     },
 
     async toggleTaskComplete(cardId) {

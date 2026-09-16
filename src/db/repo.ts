@@ -13,7 +13,7 @@ import type { Board, Card, Column, Meta, NewCard, Snapshot } from '../types';
 
 const META_KEY = 'app';
 
-export type CardPatch = Partial<Pick<Card, 'title' | 'url' | 'favIconUrl' | 'note' | 'completedAt'>>;
+export type CardPatch = Partial<Pick<Card, 'title' | 'url' | 'favIconUrl' | 'note' | 'completedAt' | 'tabs'>>;
 
 /** Persistence contract backing the in-memory store and UI. */
 export interface Repo {
@@ -253,6 +253,7 @@ export function createRepo(db: IDBDatabase): Repo {
       favIconUrl: data.favIconUrl,
       kind: data.kind,
       note: data.note,
+      tabs: data.tabs,
       savedAt: Date.now(),
     };
     const tx = db.transaction(STORE.cards, 'readwrite');
