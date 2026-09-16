@@ -868,13 +868,6 @@ body {
   pointer-events: none !important;
 }
 
-.card--drop-before {
-  box-shadow: 0 -2px 0 0 var(--accent);
-}
-
-.card--drop-after {
-  box-shadow: 0 2px 0 0 var(--accent);
-}
 
 .column--dragging {
   opacity: 0.35;

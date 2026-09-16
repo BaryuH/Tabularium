@@ -19,14 +19,13 @@ const MIME_COLUMN = 'application/x-tabularium-column';
 // ── Indicator management ────────────────────────────────────────────────
 const INDICATOR_CLASSES = [
   'column--drop-target',
-  'card--drop-before',
-  'card--drop-after',
   'column--dragging',
   'card--dragging',
   'stab--dragging',
 ] as const;
 
 let activePlaceholder: HTMLElement | null = null;
+let draggedCardHeight = 44;
 
 function getOrCreatePlaceholder(height = 44): HTMLElement {
   if (!activePlaceholder) {
@@ -60,12 +59,11 @@ function clearIndicators(root: HTMLElement): void {
   for (const cls of INDICATOR_CLASSES) {
     for (const el of root.querySelectorAll(`.${cls}`)) el.classList.remove(cls);
   }
-  removePlaceholder();
 }
 
 // ── Position helpers ────────────────────────────────────────────────────
 function cardInsertIndex(container: HTMLElement, y: number): number {
-  const cards = container.querySelectorAll<HTMLElement>('.card:not(.card--dragging):not(.column--dragging)');
+  const cards = container.querySelectorAll<HTMLElement>('.card:not(.card--dragging)');
   for (let i = 0; i < cards.length; i++) {
     const rect = cards[i].getBoundingClientRect();
     if (y < rect.top + rect.height / 2) return i;
@@ -113,12 +111,10 @@ export function setupDnD(root: HTMLElement, store: Store): void {
     const card = target.closest<HTMLElement>('.card');
     if (card && card.dataset.id) {
       const colId = columnIdOf(card);
-      const height = card.offsetHeight || 44;
-      getOrCreatePlaceholder(height);
+      draggedCardHeight = card.offsetHeight || 44;
       e.dataTransfer!.setData(MIME_CARD, JSON.stringify({
         cardId: card.dataset.id,
         fromColumnId: colId ?? '',
-        height,
       }));
       e.dataTransfer!.effectAllowed = 'move';
       requestAnimationFrame(() => card.classList.add('card--dragging'));
@@ -175,14 +171,12 @@ export function setupDnD(root: HTMLElement, store: Store): void {
       const cardsContainer = column.querySelector<HTMLElement>('.column__cards');
       if (!cardsContainer) return;
       const idx = cardInsertIndex(cardsContainer, e.clientY);
-      const phHeight = activePlaceholder
-        ? parseFloat(activePlaceholder.style.getPropertyValue('--ph-height')) || 44
-        : 44;
-      updatePlaceholder(cardsContainer, idx, phHeight);
+      updatePlaceholder(cardsContainer, idx, draggedCardHeight);
       return;
     }
     // Column reorder
     if (types.includes(MIME_COLUMN)) {
+      removePlaceholder();
       const columnsContainer = (e.target as HTMLElement).closest<HTMLElement>('.columns');
       if (!columnsContainer) return;
       const column = (e.target as HTMLElement).closest<HTMLElement>('.column:not(.column--add):not(.column--dragging)');
@@ -198,7 +192,7 @@ export function setupDnD(root: HTMLElement, store: Store): void {
   root.addEventListener('drop', (e) => {
     e.preventDefault();
     clearIndicators(root);
-
+    removePlaceholder();
     // Tab → column → createCard
     const tabData = e.dataTransfer?.getData(MIME_TAB);
     if (tabData) {
@@ -270,6 +264,9 @@ export function setupDnD(root: HTMLElement, store: Store): void {
     }
   });
 
-  // ── dragend ──
-  root.addEventListener('dragend', () => clearIndicators(root));
+  root.addEventListener('dragend', () => {
+    clearIndicators(root);
+    removePlaceholder();
+    draggedCardHeight = 44;
+  });
 }
