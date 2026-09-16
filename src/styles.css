@@ -97,10 +97,6 @@ body {
   letter-spacing: -0.01em;
 }
 
-.brand__tag {
-  font-size: 13px;
-  color: var(--text-muted);
-}
 
 .sidebar {
   border-right: 1px solid var(--border);
@@ -1346,11 +1342,6 @@ body {
   color: var(--text);
 }
 
-.settings-data-row__desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.4;
-}
 
 .settings-data-row__actions {
   display: flex;

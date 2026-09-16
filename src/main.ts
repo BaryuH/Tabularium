@@ -27,7 +27,6 @@ const LAYOUT = `
   <div class="layout">
     <header class="brand header">
       <span class="brand__name">Tabularium</span>
-      <span class="brand__tag">your tabs, filed away</span>
       <div class="brand__actions">
         <button id="theme-toggle" class="icon-btn theme-toggle" title="Toggle theme"></button>
         <button id="settings-btn" class="icon-btn settings-trigger" title="Settings">${iconGear}</button>

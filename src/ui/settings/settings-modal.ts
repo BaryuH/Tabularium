@@ -96,14 +96,12 @@ export function createSettingsModal(store: Store): SettingsModal {
           <!-- Section 2: Data Backup & Restore -->
           <section class="settings-section">
             <h3 class="settings-section__title">Data Backup & Restore</h3>
-            <p class="settings-section__desc">Export your boards, columns, and cards to JSON or CSV spreadsheet, or restore from a backup file.</p>
 
             <div class="settings-data-list">
               <!-- JSON Row -->
               <div class="settings-data-row">
                 <div class="settings-data-row__info">
                   <span class="settings-data-row__title">Full Backup (JSON)</span>
-                  <span class="settings-data-row__desc">Complete snapshot of all boards, columns, cards, and preferences.</span>
                 </div>
                 <div class="settings-data-row__actions">
                   <button class="settings-btn" data-action="export-json" title="Download JSON backup file">
@@ -122,7 +120,6 @@ export function createSettingsModal(store: Store): SettingsModal {
               <div class="settings-data-row">
                 <div class="settings-data-row__info">
                   <span class="settings-data-row__title">Spreadsheet (CSV)</span>
-                  <span class="settings-data-row__desc">Excel, Google Sheets, and Notion compatible list of cards.</span>
                 </div>
                 <div class="settings-data-row__actions">
                   <button class="settings-btn" data-action="export-csv" title="Download CSV spreadsheet">
