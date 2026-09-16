@@ -1,3 +1,5 @@
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
 import './styles.css';
 import { showToast } from './ui/toast';
 import { openDatabase } from './db/schema';

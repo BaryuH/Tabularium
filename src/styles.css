@@ -6,6 +6,8 @@
   --text: #ececee;
   --text-muted: #9a9aa3;
   --accent: #928ee8;
+  --font-sans: 'Geist Variable', 'Geist', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --radius: 10px;
   --radius-sm: 6px;
   --gap: 16px;
@@ -47,10 +49,10 @@ body {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   opacity: 0;
   transition: opacity 0.15s, background-color 0.2s ease, color 0.18s ease;
 }
@@ -375,11 +377,13 @@ body {
 }
 
 .column__count {
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
   color: var(--text-muted);
   background: var(--surface-2);
   border-radius: 999px;
-  padding: 1px 8px;
+  padding: 1px 7px;
 }
 
 .column__del {
@@ -747,8 +751,9 @@ body {
 }
 
 .sidebar__count {
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: normal;
   text-transform: none;
   vertical-align: middle;
