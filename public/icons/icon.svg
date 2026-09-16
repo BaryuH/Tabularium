@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e24" />
+      <stop offset="100%" stop-color="#2a2845" />
+    </linearGradient>
+    <linearGradient id="emblemGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e0dfff" />
+      <stop offset="100%" stop-color="#ffffff" />
+    </linearGradient>
+  </defs>
+  <!-- Squircle container -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bgGrad)" stroke="#3a375a" stroke-width="2" />
+  <!-- Classical Roman Archive / 3 Columns -->
+  <!-- Top beam -->
+  <rect x="28" y="28" width="72" height="8" rx="2" fill="url(#emblemGrad)" />
+  <!-- 3 Pillars -->
+  <rect x="33" y="36" width="14" height="54" rx="2" fill="url(#emblemGrad)" />
+  <rect x="57" y="36" width="14" height="54" rx="2" fill="url(#emblemGrad)" />
+  <rect x="81" y="36" width="14" height="54" rx="2" fill="url(#emblemGrad)" />
+  <!-- Bottom base -->
+  <rect x="28" y="90" width="72" height="8" rx="2" fill="url(#emblemGrad)" />
+</svg>
