@@ -7,7 +7,7 @@
  * store changes (never on keystrokes), the edit <input> keeps focus while the
  * user types.
  */
-import { iconPlus, iconTrash, iconX, iconTask, iconNote } from '../icons';
+import { iconPlus, iconTrash, iconX, iconTask, iconTaskDone, iconNote } from '../icons';
 import { escapeHtml, hostOf } from '../../util';
 import type { Board, Card, CardKind, Column } from '../../types';
 import type { Store } from '../../state/store';
@@ -37,9 +37,10 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
 
   const cardHtml = (card: Card): string => {
     const kind: CardKind = card.kind ?? 'tab';
+    const isDone = Boolean(card.completedAt);
     let indicator: string;
     if (kind === 'task') {
-      indicator = `<span class="card__icon card__icon--task">${iconTask}</span>`;
+      indicator = `<button class="card__check" data-action="toggle-task" data-id="${card.id}" title="${isDone ? 'Mark uncompleted' : 'Mark completed'}" aria-label="${isDone ? 'Mark uncompleted' : 'Mark completed'}">${isDone ? iconTaskDone : iconTask}</button>`;
     } else if (kind === 'note') {
       indicator = `<span class="card__icon card__icon--note">${iconNote}</span>`;
     } else {
@@ -51,7 +52,8 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     const hostLine = kind === 'tab' && card.url
       ? `<span class="card__host">${escapeHtml(hostOf(card.url))}</span>`
       : '';
-    return `<article class="card card--${kind}" draggable="true" tabindex="0" role="link" data-id="${card.id}">
+    const doneCls = isDone ? ' card--done' : '';
+    return `<article class="card card--${kind}${doneCls}" draggable="true" tabindex="0" role="${kind === 'task' ? 'checkbox' : 'link'}" ${kind === 'task' ? `aria-checked="${isDone}"` : ''} data-id="${card.id}">
       ${indicator}
       <span class="card__body">
         <span class="card__title">${escapeHtml(label)}</span>
@@ -211,11 +213,17 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       handleAction(actionEl);
       return;
     }
-    // Card body click (no data-action ancestor) → onCardClick
+    // Card body click (no data-action ancestor)
     const card = (event.target as HTMLElement).closest<HTMLElement>('.card');
-    if (card?.dataset.id && opts?.onCardClick) {
+    if (card?.dataset.id) {
       const cardData = store.getState().cards[card.dataset.id];
-      if (cardData) opts.onCardClick(cardData.url);
+      if (cardData) {
+        if (cardData.kind === 'task') {
+          void store.toggleTaskComplete(card.dataset.id);
+          return;
+        }
+        if (opts?.onCardClick) opts.onCardClick(cardData.url);
+      }
     }
   };
 
@@ -252,6 +260,9 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       case 'add-note':
         if (id) setEditing({ kind: 'new-note', columnId: id });
         break;
+      case 'toggle-task':
+        if (id) void store.toggleTaskComplete(id);
+        break;
     }
   };
 
@@ -263,16 +274,24 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       else if (event.key === 'Escape') { event.preventDefault(); setEditing(null); }
       return;
     }
-    // Card keyboard activation (a11y)
-    if (event.key === 'Enter' && target.closest('.card') && !target.closest('[data-action]')) {
+    // Card keyboard activation (a11y: Enter or Space for task)
+    if ((event.key === 'Enter' || event.key === ' ') && target.closest('.card') && !target.closest('[data-action]')) {
       const card = target.closest<HTMLElement>('.card');
-      if (card?.dataset.id && opts?.onCardClick) {
+      if (card?.dataset.id) {
         const cardData = store.getState().cards[card.dataset.id];
-        if (cardData) opts.onCardClick(cardData.url);
+        if (cardData) {
+          if (cardData.kind === 'task') {
+            event.preventDefault();
+            void store.toggleTaskComplete(card.dataset.id);
+            return;
+          }
+          if (event.key === 'Enter' && opts?.onCardClick) {
+            opts.onCardClick(cardData.url);
+          }
+        }
       }
     }
   };
-
   const onFocusOut = (event: FocusEvent): void => {
     const target = event.target as HTMLElement;
     if (target.matches('.editing-input')) commit((target as HTMLInputElement).value);

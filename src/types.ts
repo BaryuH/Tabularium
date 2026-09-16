@@ -27,6 +27,8 @@ export interface Card {
   savedAt: number;
   /** Card type: 'tab' (saved browser tab), 'task' (user-created action item), 'note' (free-form reference). */
   kind?: CardKind;
+  /** Timestamp when a task was marked completed. */
+  completedAt?: number;
   /** Reserved for v2 (rich notes body). */
   note?: string;
 }

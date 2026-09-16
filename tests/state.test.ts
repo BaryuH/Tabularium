@@ -66,6 +66,22 @@ it('moveCard relocates a card across columns in state', async () => {
   expect(store.cardsOfColumn(todo.id).map((c) => c.id)).toEqual([card.id]);
 });
 
+it('createCard supports task kind and toggleTaskComplete toggles completedAt', async () => {
+  const inbox = store.columnsOfBoard(store.boardsSorted()[0].id)[0];
+  const task = await store.createCard(inbox.id, { url: '', title: 'Buy milk', kind: 'task' });
+  expect(task.kind).toBe('task');
+  expect(task.completedAt).toBeUndefined();
+
+  await store.toggleTaskComplete(task.id);
+  const doneTask = store.cardsOfColumn(inbox.id).find((c) => c.id === task.id);
+  expect(doneTask?.completedAt).toBeTypeOf('number');
+
+  // Toggle again to uncomplete
+  await store.toggleTaskComplete(task.id);
+  const undoneTask = store.cardsOfColumn(inbox.id).find((c) => c.id === task.id);
+  expect(undoneTask?.completedAt).toBeUndefined();
+});
+
 it('setActiveBoard and setTheme update meta', async () => {
   const second = await store.createBoard('Second');
   await store.setActiveBoard(second.id);

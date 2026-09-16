@@ -13,7 +13,7 @@ import type { Board, Card, Column, Meta, NewCard, Snapshot } from '../types';
 
 const META_KEY = 'app';
 
-export type CardPatch = Partial<Pick<Card, 'title' | 'url' | 'favIconUrl' | 'note'>>;
+export type CardPatch = Partial<Pick<Card, 'title' | 'url' | 'favIconUrl' | 'note' | 'completedAt'>>;
 
 /** Persistence contract backing the in-memory store and UI. */
 export interface Repo {
@@ -228,6 +228,9 @@ export function createRepo(db: IDBDatabase): Repo {
     const card = await getCard(id);
     if (!card) throw new Error(`Card not found: ${id}`);
     const updated: Card = { ...card, ...patch };
+    if ('completedAt' in patch && patch.completedAt === undefined) {
+      delete updated.completedAt;
+    }
     const tx = db.transaction(STORE.cards, 'readwrite');
     tx.objectStore(STORE.cards).put(updated);
     await txDone(tx);

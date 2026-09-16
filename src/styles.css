@@ -335,6 +335,41 @@ body {
 /* Card kind variants */
 .card--task {
   border-left: 3px solid var(--accent);
+  cursor: pointer;
+}
+
+.card--task.card--done {
+  border-left-color: var(--border);
+  opacity: 0.55;
+}
+
+.card--task.card--done .card__title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.card__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.card__check:hover {
+  transform: scale(1.2);
+}
+
+.card--done .card__check {
+  color: var(--text-muted);
 }
 
 .card--note {
@@ -348,11 +383,6 @@ body {
   height: 16px;
   color: var(--text-muted);
 }
-
-.card__icon--task {
-  color: var(--accent);
-}
-
 /* Column footer — add task / add note */
 .column__add-row {
   display: flex;
