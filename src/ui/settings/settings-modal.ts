@@ -8,6 +8,7 @@
  */
 import { iconDownload, iconUpload, iconX } from '../icons';
 import { showToast } from '../toast';
+import { importCsvToStore, serializeSnapshotToCsv } from '../../util/csv';
 import type { Store } from '../../state/store';
 import type { Snapshot, TabOpenBehavior } from '../../types';
 
@@ -18,8 +19,8 @@ export interface SettingsModal {
   mount(parent: HTMLElement): void;
 }
 
-function triggerDownload(content: string, filename: string): void {
-  const blob = new Blob([content], { type: 'application/json' });
+function triggerDownload(content: string, filename: string, mimeType = 'application/json'): void {
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -75,19 +76,30 @@ export function createSettingsModal(store: Store): SettingsModal {
           <!-- Section 2: Data Backup & Restore -->
           <section class="settings-section">
             <h3 class="settings-section__title">Data Backup & Restore</h3>
-            <p class="settings-section__desc">Export your boards, columns, and cards to a local JSON file, or restore from a previous backup.</p>
+            <p class="settings-section__desc">Export your boards, columns, and cards to JSON or CSV spreadsheet, or restore from a backup file.</p>
 
             <div class="settings-actions">
-              <button class="settings-btn" data-action="export-json" title="Download backup file">
+              <button class="settings-btn" data-action="export-json" title="Download JSON backup file">
                 ${iconDownload}
-                <span>Export Data (JSON)</span>
+                <span>Export JSON</span>
               </button>
 
-              <button class="settings-btn" data-action="trigger-import" title="Restore from backup file">
+              <button class="settings-btn" data-action="trigger-import" title="Restore from JSON backup file">
                 ${iconUpload}
-                <span>Import Data (JSON)</span>
+                <span>Import JSON</span>
               </button>
               <input type="file" class="settings-file-input" accept=".json" style="display: none;" />
+
+              <button class="settings-btn" data-action="export-csv" title="Download CSV spreadsheet">
+                ${iconDownload}
+                <span>Export CSV</span>
+              </button>
+
+              <button class="settings-btn" data-action="trigger-import-csv" title="Import cards from CSV spreadsheet">
+                ${iconUpload}
+                <span>Import CSV</span>
+              </button>
+              <input type="file" class="settings-csv-file-input" accept=".csv,text/csv" style="display: none;" />
             </div>
           </section>
         </div>
@@ -152,6 +164,26 @@ export function createSettingsModal(store: Store): SettingsModal {
         }
       });
     }
+
+    // Wire Import CSV file input
+    const csvFileInput = container.querySelector<HTMLInputElement>('.settings-csv-file-input');
+    if (csvFileInput) {
+      csvFileInput.addEventListener('change', async () => {
+        const file = csvFileInput.files?.[0];
+        if (!file) return;
+
+        try {
+          const text = await file.text();
+          const { count } = await importCsvToStore(text, store);
+          showToast(`Successfully imported ${count} card${count === 1 ? '' : 's'} from CSV!`);
+          close();
+        } catch (err) {
+          showToast(err instanceof Error ? err.message : 'Failed to parse CSV file');
+        } finally {
+          csvFileInput.value = '';
+        }
+      });
+    }
   };
 
   const open = (): void => {
@@ -202,11 +234,31 @@ export function createSettingsModal(store: Store): SettingsModal {
       return;
     }
 
-    // Trigger Import
+    // Trigger JSON Import
     if (target.closest('[data-action="trigger-import"]')) {
       event.preventDefault();
       const fileInput = container?.querySelector<HTMLInputElement>('.settings-file-input');
       fileInput?.click();
+      return;
+    }
+
+    // Export CSV
+    if (target.closest('[data-action="export-csv"]')) {
+      event.preventDefault();
+      void store.exportSnapshot().then((snapshot) => {
+        const dateStr = new Date().toISOString().split('T')[0];
+        const csv = serializeSnapshotToCsv(snapshot);
+        triggerDownload(csv, `tabularium-export-${dateStr}.csv`, 'text/csv;charset=utf-8;');
+        showToast('CSV file exported');
+      });
+      return;
+    }
+
+    // Trigger CSV Import
+    if (target.closest('[data-action="trigger-import-csv"]')) {
+      event.preventDefault();
+      const csvFileInput = container?.querySelector<HTMLInputElement>('.settings-csv-file-input');
+      csvFileInput?.click();
     }
   };
 
