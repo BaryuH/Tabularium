@@ -55,4 +55,4 @@ export interface Snapshot {
 }
 
 /** Fields captured when saving a tab as a card. */
-export type NewCard = Pick<Card, 'url' | 'title'> & Partial<Pick<Card, 'favIconUrl' | 'kind'>>;
+export type NewCard = Pick<Card, 'url' | 'title'> & Partial<Pick<Card, 'favIconUrl' | 'kind' | 'note'>>;

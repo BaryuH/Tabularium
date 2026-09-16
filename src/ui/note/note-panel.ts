@@ -14,6 +14,7 @@ import type { Store } from '../../state/store';
 
 export interface NotePanel {
   open(cardId: string): void;
+  openNew(columnId: string, kind: 'task' | 'note'): void;
   close(): void;
   isOpen(): boolean;
   mount(parent: HTMLElement): void;
@@ -21,14 +22,37 @@ export interface NotePanel {
 
 export function createNotePanel(store: Store): NotePanel {
   let activeCardId: string | null = null;
+  let pendingNew: { columnId: string; kind: 'task' | 'note' } | null = null;
   let container: HTMLElement | null = null;
-  let saveTimer: ReturnType<typeof setTimeout> | undefined;
+  let saveTimer: number | NodeJS.Timeout | undefined;
   let pendingTitle: string | null = null;
   let pendingNote: string | null = null;
-
   const flushSave = (): void => {
     clearTimeout(saveTimer);
     saveTimer = undefined;
+
+    if (pendingNew) {
+      const rawTitle = (pendingTitle ?? '').trim();
+      const rawNote = (pendingNote ?? '').trim();
+      if (rawTitle || rawNote) {
+        const cur = pendingNew;
+        pendingNew = null;
+        const title = rawTitle || '(untitled)';
+        const note = pendingNote ?? '';
+        pendingTitle = null;
+        pendingNote = null;
+        void store.createCard(cur.columnId, {
+          url: '',
+          title,
+          note,
+          kind: cur.kind,
+        }).then((created) => {
+          activeCardId = created.id;
+        });
+      }
+      return;
+    }
+
     if (!activeCardId) return;
     if (pendingTitle !== null || pendingNote !== null) {
       const card = store.getState().cards[activeCardId];
@@ -61,27 +85,29 @@ export function createNotePanel(store: Store): NotePanel {
     }
   };
 
-  const renderContent = (cardId: string): void => {
+  const renderContent = (cardId?: string): void => {
     if (!container) return;
-    const card = store.getState().cards[cardId];
-    if (!card) return;
-    const isTask = card.kind === 'task';
-    const isDone = Boolean(card.completedAt);
+    const card = cardId ? store.getState().cards[cardId] : null;
+    if (cardId && !card) return;
+
+    const kind = card ? card.kind : (pendingNew?.kind ?? 'note');
+    const isTask = kind === 'task';
+    const isDone = Boolean(card?.completedAt);
     const badgeLabel = isTask ? 'Task' : 'Note';
     const badgeClass = isTask ? 'note-panel__badge note-panel__badge--task' : 'note-panel__badge';
     const titlePlaceholder = isTask ? 'Task title...' : 'Note title...';
     const textareaPlaceholder = isTask ? 'Add task details, steps, or description...' : 'Write your note here...';
 
-    const taskToggleBtn = isTask
+    const taskToggleBtn = isTask && card
       ? `<button class="note-panel__task-toggle${isDone ? ' note-panel__task-toggle--done' : ''}" data-action="toggle-panel-task" title="${isDone ? 'Mark uncompleted' : 'Mark completed'}">
           ${isDone ? iconTaskDone : iconTask}
           <span>${isDone ? 'Completed' : 'Mark done'}</span>
         </button>`
       : '';
 
-    const title = card.title === '(untitled)' ? '' : card.title;
-    const note = card.note ?? '';
-    const dateStr = new Date(card.savedAt).toLocaleDateString(undefined, {
+    const title = card ? (card.title === '(untitled)' ? '' : card.title) : '';
+    const note = card?.note ?? '';
+    const dateStr = new Date(card?.savedAt ?? Date.now()).toLocaleDateString(undefined, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -124,10 +150,23 @@ export function createNotePanel(store: Store): NotePanel {
       updateCounts(note);
 
       const onInput = (): void => {
-        const t = titleInput.value.trim() || '(untitled)';
-        const n = textarea.value;
-        updateCounts(n);
-        scheduleSave(t, n);
+        const rawTitle = titleInput.value.trim();
+        const rawNote = textarea.value;
+        updateCounts(rawNote);
+
+        if (pendingNew) {
+          if (rawTitle || rawNote.trim()) {
+            scheduleSave(rawTitle || '(untitled)', rawNote);
+          } else {
+            pendingTitle = null;
+            pendingNote = null;
+            clearTimeout(saveTimer);
+          }
+          return;
+        }
+
+        const t = rawTitle || '(untitled)';
+        scheduleSave(t, rawNote);
       };
 
       titleInput.addEventListener('input', onInput);
@@ -150,11 +189,25 @@ export function createNotePanel(store: Store): NotePanel {
 
   const close = (): void => {
     flushSave();
+    if (activeCardId) {
+      const card = store.getState().cards[activeCardId];
+      if (card) {
+        const title = card.title.trim();
+        const note = (card.note ?? '').trim();
+        const url = (card.url ?? '').trim();
+        if ((!title || title === '(untitled)') && !note && !url) {
+          void store.deleteCard(activeCardId);
+        }
+      }
+    }
     activeCardId = null;
+    pendingNew = null;
+    pendingTitle = null;
+    pendingNote = null;
     if (container) {
       container.classList.remove('note-panel-container--open');
       setTimeout(() => {
-        if (!activeCardId && container) container.innerHTML = '';
+        if (!activeCardId && !pendingNew && container) container.innerHTML = '';
       }, 200);
     }
   };
@@ -162,14 +215,29 @@ export function createNotePanel(store: Store): NotePanel {
   const open = (cardId: string): void => {
     flushSave();
     activeCardId = cardId;
+    pendingNew = null;
+    pendingTitle = null;
+    pendingNote = null;
     if (container) {
       renderContent(cardId);
       container.classList.add('note-panel-container--open');
     }
   };
 
+  const openNew = (columnId: string, kind: 'task' | 'note'): void => {
+    flushSave();
+    activeCardId = null;
+    pendingNew = { columnId, kind };
+    pendingTitle = null;
+    pendingNote = null;
+    if (container) {
+      renderContent();
+      container.classList.add('note-panel-container--open');
+    }
+  };
+
   const onGlobalKeydown = (event: KeyboardEvent): void => {
-    if (!activeCardId) return;
+    if (!activeCardId && !pendingNew) return;
     if (event.key === 'Escape') {
       event.preventDefault();
       close();
@@ -196,8 +264,9 @@ export function createNotePanel(store: Store): NotePanel {
   };
   return {
     open,
+    openNew,
     close,
-    isOpen: () => activeCardId !== null,
+    isOpen: () => activeCardId !== null || pendingNew !== null,
     mount(parent) {
       container = document.createElement('div');
       container.className = 'note-panel-container';

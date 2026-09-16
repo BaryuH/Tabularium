@@ -252,6 +252,7 @@ export function createRepo(db: IDBDatabase): Repo {
       title: data.title,
       favIconUrl: data.favIconUrl,
       kind: data.kind,
+      note: data.note,
       savedAt: Date.now(),
     };
     const tx = db.transaction(STORE.cards, 'readwrite');

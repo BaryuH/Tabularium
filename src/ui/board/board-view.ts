@@ -308,9 +308,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       case 'add-task':
         if (id) {
           if (opts?.notePanel) {
-            void store.createCard(id, { url: '', title: '', kind: 'task' }).then((c) => {
-              opts.notePanel?.open(c.id);
-            });
+            opts.notePanel.openNew(id, 'task');
           } else {
             setEditing({ kind: 'new-task', columnId: id });
           }
@@ -319,9 +317,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       case 'add-note':
         if (id) {
           if (opts?.notePanel) {
-            void store.createCard(id, { url: '', title: '', kind: 'note' }).then((c) => {
-              opts.notePanel?.open(c.id);
-            });
+            opts.notePanel.openNew(id, 'note');
           } else {
             setEditing({ kind: 'new-note', columnId: id });
           }
