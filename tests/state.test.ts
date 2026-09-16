@@ -110,6 +110,29 @@ it('createBoard with icon and setBoardIcon update board icon', async () => {
   expect(store.boardsSorted().find((b) => b.id === board.id)?.icon).toBeUndefined();
 });
 
+it('createCard with note kind and updateCard persists note content', async () => {
+  const inbox = store.columnsOfBoard(store.boardsSorted()[0].id)[0];
+  const card = await store.createCard(inbox.id, { url: '', title: 'Meeting Notes', kind: 'note' });
+  expect(card.kind).toBe('note');
+  expect(card.note).toBeUndefined();
+
+  await store.updateCard(card.id, {
+    title: 'Q3 Product Roadmap',
+    note: '# Goals\n- Ship v2 rich notes\n- Add search',
+  });
+
+  const updated = store.cardsOfColumn(inbox.id).find((c) => c.id === card.id);
+  expect(updated?.title).toBe('Q3 Product Roadmap');
+  expect(updated?.note).toContain('Ship v2 rich notes');
+
+  // Verify persistence across store re-read
+  const otherStore = createStore(repo);
+  await otherStore.applyExternalChange();
+  const persisted = otherStore.cardsOfColumn(inbox.id).find((c) => c.id === card.id);
+  expect(persisted?.title).toBe('Q3 Product Roadmap');
+  expect(persisted?.note).toContain('Ship v2 rich notes');
+});
+
 it('applyExternalChange re-reads writes made directly against the repo', async () => {
   const inbox = store.columnsOfBoard(store.boardsSorted()[0].id)[0];
   await repo.createCard(inbox.id, { url: 'ext', title: 'ext' }); // bypasses the store
