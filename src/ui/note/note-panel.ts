@@ -8,7 +8,7 @@
  * - Escape or click-outside to close
  * - Live character and word counts
  */
-import { iconX } from '../icons';
+import { iconX, iconTask, iconTaskDone } from '../icons';
 import { escapeHtml } from '../../util';
 import type { Store } from '../../state/store';
 
@@ -65,6 +65,19 @@ export function createNotePanel(store: Store): NotePanel {
     if (!container) return;
     const card = store.getState().cards[cardId];
     if (!card) return;
+    const isTask = card.kind === 'task';
+    const isDone = Boolean(card.completedAt);
+    const badgeLabel = isTask ? 'Task' : 'Note';
+    const badgeClass = isTask ? 'note-panel__badge note-panel__badge--task' : 'note-panel__badge';
+    const titlePlaceholder = isTask ? 'Task title...' : 'Note title...';
+    const textareaPlaceholder = isTask ? 'Add task details, steps, or description...' : 'Write your note here...';
+
+    const taskToggleBtn = isTask
+      ? `<button class="note-panel__task-toggle${isDone ? ' note-panel__task-toggle--done' : ''}" data-action="toggle-panel-task" title="${isDone ? 'Mark uncompleted' : 'Mark completed'}">
+          ${isDone ? iconTaskDone : iconTask}
+          <span>${isDone ? 'Completed' : 'Mark done'}</span>
+        </button>`
+      : '';
 
     const title = card.title === '(untitled)' ? '' : card.title;
     const note = card.note ?? '';
@@ -76,34 +89,34 @@ export function createNotePanel(store: Store): NotePanel {
 
     container.innerHTML = `
       <div class="note-panel__backdrop" data-action="close-note"></div>
-      <aside class="note-panel" role="dialog" aria-modal="true" aria-label="Note Editor">
+      <aside class="note-panel" role="dialog" aria-modal="true" aria-label="${badgeLabel} Editor">
         <header class="note-panel__head">
           <div class="note-panel__meta">
-            <span class="note-panel__badge">Note</span>
+            <span class="${badgeClass}">${badgeLabel}</span>
+            ${taskToggleBtn}
             <span class="note-panel__date">${escapeHtml(dateStr)}</span>
             <span class="note-panel__counts">0 words · 0 chars</span>
           </div>
-          <button class="icon-btn note-panel__close" data-action="close-note" title="Close note (Esc)">${iconX}</button>
+          <button class="icon-btn note-panel__close" data-action="close-note" title="Close (Esc)">${iconX}</button>
         </header>
 
         <div class="note-panel__body">
           <input
             class="note-panel__title-input"
             type="text"
-            placeholder="Note title..."
+            placeholder="${titlePlaceholder}"
             value="${escapeHtml(title)}"
             autocomplete="off"
             spellcheck="false"
           />
           <textarea
             class="note-panel__textarea"
-            placeholder="Write your note here..."
+            placeholder="${textareaPlaceholder}"
             spellcheck="true"
           >${escapeHtml(note)}</textarea>
         </div>
       </aside>
     `;
-
     const titleInput = container.querySelector<HTMLInputElement>('.note-panel__title-input');
     const textarea = container.querySelector<HTMLTextAreaElement>('.note-panel__textarea');
 
@@ -167,13 +180,20 @@ export function createNotePanel(store: Store): NotePanel {
   };
 
   const onClick = (event: MouseEvent): void => {
+    const toggleBtn = (event.target as HTMLElement).closest<HTMLElement>('[data-action="toggle-panel-task"]');
+    if (toggleBtn && activeCardId) {
+      event.preventDefault();
+      void store.toggleTaskComplete(activeCardId).then(() => {
+        if (activeCardId) renderContent(activeCardId);
+      });
+      return;
+    }
     const el = (event.target as HTMLElement).closest<HTMLElement>('[data-action="close-note"]');
     if (el) {
       event.preventDefault();
       close();
     }
   };
-
   return {
     open,
     close,
