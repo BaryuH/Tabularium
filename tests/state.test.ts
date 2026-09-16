@@ -13,10 +13,12 @@ beforeEach(async () => {
   await store.hydrate();
 });
 
-it('hydrate seeds and loads the default board with an Inbox column', () => {
+it('hydrate seeds and loads default boards with Inbox columns', () => {
   const boards = store.boardsSorted();
-  expect(boards).toHaveLength(1);
-  expect(store.columnsOfBoard(boards[0].id).map((c) => c.name)).toEqual(['Inbox']);
+  expect(boards).toHaveLength(3);
+  expect(boards.map((b) => b.name)).toEqual(['General', 'Projects', 'Reading List']);
+  expect(boards.map((b) => b.icon)).toEqual(['🏛️', '🚀', '📚']);
+  expect(store.columnsOfBoard(boards[0].id).map((c) => c.name)).toContain('Inbox');
   expect(store.activeBoard()?.id).toBe(boards[0].id);
 });
 
