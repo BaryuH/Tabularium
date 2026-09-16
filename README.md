@@ -1,25 +1,16 @@
-
 # Tabularium
 
-A Chrome extension that turns your New Tab into a Kanban dashboard for organizing browser tabs. Save tabs as cards, create tasks and notes, drag-and-drop to organize, and never lose context again.
+**Tabularium** turns your browser's default New Tab page into a calm, minimalist Kanban workspace designed for **deep focus** and **peak productivity**.
 
-The name evokes the Roman *tabularium* (public records archive): an orderly, trustworthy place to file everything away.
+Instead of letting dozens of scattered tabs clutter your browser, drain system memory, and break your concentration, Tabularium provides an orderly digital archive. File your tabs away as visual cards, capture quick tasks and detailed notes in a spacious drawer, and organize your work into dedicated boards without ever losing context.
 
-## Features (v1)
+---
 
-- **Kanban board** on every New Tab: boards, columns, cards.
-- **Live sidebar** mirrors your current window's open tabs in real time.
-- **Drag tabs into columns** to save them as cards (tab stays open).
-- **Add tasks and notes** per column: quick-capture for action items and reference.
-- **Click a card** to jump to the matching open tab, or open a new one.
-- **Board/column CRUD**: create, rename, delete, reorder via drag.
-- **Dark mode** with system/light/dark toggle (no flash on load).
-- **Global shortcut** (Alt+S / Cmd+Shift+S) to quick-save the active tab to Inbox.
-- **Local-first**: all data in IndexedDB, no network, no account required.
+## Usage
 
-## Quick start
+### 1. Clone & Build
 
-Prerequisites: Node.js 20+, npm.
+Make sure you have **Node.js 20+** and **npm** installed.
 
 ```bash
 git clone https://github.com/BaryuH/Tabularium.git
@@ -28,49 +19,24 @@ npm install
 npm run build
 ```
 
-Then load the extension in Chrome:
+This generates the ready-to-use extension in the `dist/` directory.
 
-1. Open `chrome://extensions`
-2. Enable **Developer mode** (top-right toggle)
-3. Click **Load unpacked** and select the `dist/` folder
-4. Open a new tab
+### 2. Load Unpacked in Your Browser
 
-## Development
+Works on **Google Chrome**, **Brave**, **Microsoft Edge**, and any Chromium-based browser:
 
-```bash
-npm run dev         # Vite dev build with HMR (crxjs)
-npm run build       # Production build -> dist/
-npm run typecheck   # tsc --noEmit
-npm run lint        # ESLint
-npm test            # Vitest (38 tests)
-npm run preview     # Serve dist/ on localhost:5055 for smoke testing
-```
+1. Open your browser and navigate to `chrome://extensions` (or `brave://extensions`, `edge://extensions`).
+2. Toggle on **Developer mode** in the top-right corner.
+3. Click the **Load unpacked** button in the top-left corner.
+4. Select the `dist/` folder inside the `Tabularium` repository.
+5. Open a new tab and start organizing with clarity.
 
-## Tech stack
+> **Tip**: Press `Alt+S` (or `Cmd+Shift+S` on macOS) on any web page to instantly save your current tab to your workspace.
 
-- TypeScript (strict), Vanilla DOM (no framework)
-- Vite + @crxjs/vite-plugin, Manifest V3
-- IndexedDB (local-first persistence)
-- HTML5 native drag-and-drop
-- Vitest + fake-indexeddb
+---
 
-## Architecture
+## Support
 
-See `AGENTS.md` for conventions and `docs/superpowers/specs/` for the design spec.
+If Tabularium helps you declutter your browser, stay focused, and boost your daily workflow, please consider giving it a **star ⭐ on GitHub**!
 
-```
-src/
-  main.ts          # New Tab bootstrap
-  background.ts    # Service worker (quick-save shortcut)
-  types.ts         # Domain types (Board, Column, Card, Meta)
-  db/              # IndexedDB schema + repo (CRUD, ordering, cascade)
-  state/           # In-memory store (pub/sub, selectors, write-through)
-  tabs/            # chrome.tabs adapter (mockable) + URL resolver
-  theme/           # Dark mode (data-theme, anti-FOUC)
-  dnd/             # HTML5 drag-and-drop wiring
-  ui/              # Board view, sidebar view, icons, toast
-```
-
-## License
-
-MIT
+Your star helps others discover the project and supports continued development.
