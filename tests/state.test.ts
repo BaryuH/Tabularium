@@ -141,3 +141,26 @@ it('applyExternalChange re-reads writes made directly against the repo', async (
   await store.applyExternalChange();
   expect(store.cardsOfColumn(inbox.id).map((c) => c.title)).toEqual(['ext']);
 });
+
+it('setOpenBehavior updates meta.openBehavior', async () => {
+  expect(store.getState().meta.openBehavior).toBeUndefined();
+  await store.setOpenBehavior('current-tab');
+  expect(store.getState().meta.openBehavior).toBe('current-tab');
+
+  await store.setOpenBehavior('new-tab');
+  expect(store.getState().meta.openBehavior).toBe('new-tab');
+});
+
+it('store.importSnapshot refreshes in-memory state with imported data', async () => {
+  const backup = {
+    boards: [{ id: 'imp-b', name: 'Imported', order: 1000, createdAt: 1, updatedAt: 1 }],
+    columns: [{ id: 'imp-c', boardId: 'imp-b', name: 'Col', order: 1000 }],
+    cards: [{ id: 'imp-cd', columnId: 'imp-c', order: 1000, url: 'https://x.com', title: 'Card X', savedAt: 1 }],
+    meta: { activeBoardId: 'imp-b', theme: 'light' as const, schemaVersion: 1 },
+  };
+
+  await store.importSnapshot(backup);
+  expect(store.boardsSorted().map((b) => b.name)).toEqual(['Imported']);
+  expect(store.cardsOfColumn('imp-c').map((c) => c.title)).toEqual(['Card X']);
+  expect(store.activeBoard()?.id).toBe('imp-b');
+});

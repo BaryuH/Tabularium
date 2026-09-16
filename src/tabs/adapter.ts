@@ -15,7 +15,7 @@ interface SimpleEvent<T> {
 /** Subset of `chrome.tabs` consumed by the adapter. */
 export interface ChromeTabsApi {
   query(queryInfo: { currentWindow?: boolean }): Promise<chrome.tabs.Tab[]>;
-  update(tabId: number, properties: { active?: boolean }): Promise<chrome.tabs.Tab>;
+  update(tabId: number, properties: { active?: boolean; url?: string }): Promise<chrome.tabs.Tab>;
   create(properties: { url?: string }): Promise<chrome.tabs.Tab>;
   onCreated: SimpleEvent<(tab: chrome.tabs.Tab) => void>;
   onRemoved: SimpleEvent<(tabId: number, info: chrome.tabs.TabRemoveInfo) => void>;
@@ -39,6 +39,7 @@ export interface TabAdapter {
   subscribe(listener: (tabs: TabInfo[]) => void): () => void;
   activate(tabId: number): Promise<void>;
   openUrl(url: string): Promise<void>;
+  openInCurrentTab(url: string): Promise<void>;
 }
 
 function mapTab(tab: chrome.tabs.Tab): TabInfo | null {
@@ -87,6 +88,16 @@ export function createTabAdapter(api: ChromeTabsApi): TabAdapter {
 
     async openUrl(url) {
       await api.create({ url });
+    },
+
+    async openInCurrentTab(url) {
+      const tabs = await api.query({ currentWindow: true });
+      const current = tabs.find((t) => t.active);
+      if (current?.id != null) {
+        await api.update(current.id, { url });
+      } else {
+        await api.create({ url });
+      }
     },
   };
 }

@@ -123,6 +123,28 @@ it('getSnapshot returns the full sorted graph plus meta', async () => {
   expect(snapshot.meta.activeBoardId).toBe(board.id);
 });
 
+it('importSnapshot replaces current database with backup data', async () => {
+  await repo.ensureSeed();
+  const backup = {
+    boards: [{ id: 'b-new', name: 'Restored Board', order: 1000, createdAt: 1, updatedAt: 1 }],
+    columns: [{ id: 'c-new', boardId: 'b-new', name: 'Restored Col', order: 1000 }],
+    cards: [{ id: 'cd-new', columnId: 'c-new', order: 1000, url: 'https://example.com', title: 'Restored Card', savedAt: 1 }],
+    meta: { activeBoardId: 'b-new', theme: 'dark' as const, schemaVersion: 1, openBehavior: 'current-tab' as const },
+  };
+
+  await repo.importSnapshot(backup);
+
+  const boards = await repo.listBoards();
+  expect(boards).toHaveLength(1);
+  expect(boards[0].name).toBe('Restored Board');
+  const cards = await repo.listCards('c-new');
+  expect(cards).toHaveLength(1);
+  expect(cards[0].title).toBe('Restored Card');
+  const meta = await repo.getMeta();
+  expect(meta.activeBoardId).toBe('b-new');
+  expect(meta.openBehavior).toBe('current-tab');
+});
+
 it('getMeta returns defaults before anything is written', async () => {
   expect(await repo.getMeta()).toEqual({
     activeBoardId: null,

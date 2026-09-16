@@ -9,7 +9,7 @@ import { bySortOrder } from '../db/order';
 import { DB_VERSION } from '../db/schema';
 import { indexById } from '../util';
 import type { CardPatch, Repo } from '../db/repo';
-import type { Board, Card, Column, Meta, NewCard, ThemePref } from '../types';
+import type { Board, Card, Column, Meta, NewCard, Snapshot, TabOpenBehavior, ThemePref } from '../types';
 
 export interface StoreState {
   boards: Record<string, Board>;
@@ -53,6 +53,9 @@ export interface Store {
   moveCard(cardId: string, toColumnId: string, targetOrderedIds: string[]): Promise<void>;
 
   setTheme(theme: ThemePref): Promise<void>;
+  setOpenBehavior(behavior: TabOpenBehavior): Promise<void>;
+  exportSnapshot(): Promise<Snapshot>;
+  importSnapshot(snapshot: Snapshot): Promise<void>;
 }
 
 export function createStore(repo: Repo): Store {
@@ -201,6 +204,18 @@ export function createStore(repo: Repo): Store {
 
     async setTheme(theme) {
       await repo.setMeta({ theme });
+      await refresh();
+    },
+
+    async setOpenBehavior(behavior) {
+      await repo.setMeta({ openBehavior: behavior });
+      await refresh();
+    },
+
+    exportSnapshot: () => repo.getSnapshot(),
+
+    async importSnapshot(snapshot) {
+      await repo.importSnapshot(snapshot);
       await refresh();
     },
   };

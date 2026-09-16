@@ -8,7 +8,9 @@ import { resolveTarget } from './tabs/resolve';
 import { applyTheme, revealBody } from './theme';
 import { createBoardView } from './ui/board/board-view';
 import { createNotePanel } from './ui/note/note-panel';
+import { createSettingsModal } from './ui/settings/settings-modal';
 import { createSidebarView } from './ui/sidebar/sidebar-view';
+import { iconGear } from './ui/icons';
 import { setupDnD } from './dnd';
 import type { ThemePref } from './types';
 
@@ -23,7 +25,10 @@ const LAYOUT = `
     <header class="brand header">
       <span class="brand__name">Tabularium</span>
       <span class="brand__tag">your tabs, filed away</span>
-      <button id="theme-toggle" class="theme-toggle" title="Toggle theme"></button>
+      <div class="brand__actions">
+        <button id="theme-toggle" class="theme-toggle" title="Toggle theme"></button>
+        <button id="settings-btn" class="icon-btn settings-trigger" title="Settings">${iconGear}</button>
+      </div>
     </header>
     <aside class="sidebar" id="sidebar-root"></aside>
     <main class="board" id="board-root"></main>
@@ -60,12 +65,24 @@ async function bootstrap(): Promise<void> {
       notePanel,
       onCardClick: tabAdapter
         ? async (url) => {
-            const tabs = await tabAdapter.queryCurrentWindow();
-            const result = resolveTarget(url, tabs);
-            if (result.action === 'activate') await tabAdapter.activate(result.tabId);
-            else await tabAdapter.openUrl(result.url);
+            const behavior = store.getState().meta.openBehavior ?? 'new-tab';
+            if (behavior === 'current-tab') {
+              await tabAdapter.openInCurrentTab(url);
+            } else {
+              const tabs = await tabAdapter.queryCurrentWindow();
+              const result = resolveTarget(url, tabs);
+              if (result.action === 'activate') await tabAdapter.activate(result.tabId);
+              else await tabAdapter.openUrl(result.url);
+            }
           }
-        : (url) => { window.open(url, '_blank'); },
+        : (url) => {
+            const behavior = store.getState().meta.openBehavior ?? 'new-tab';
+            if (behavior === 'current-tab') {
+              window.location.href = url;
+            } else {
+              window.open(url, '_blank');
+            }
+          },
     }).mount(boardRoot);
   }
 
@@ -94,6 +111,17 @@ async function bootstrap(): Promise<void> {
       updateToggle();
     });
     updateToggle();
+  }
+
+  // Settings modal
+  const settingsModal = createSettingsModal(store);
+  settingsModal.mount(app);
+
+  const settingsBtn = app.querySelector<HTMLButtonElement>('#settings-btn');
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+      settingsModal.open();
+    });
   }
 
   // External change broadcast from background (e.g. quick-save shortcut)

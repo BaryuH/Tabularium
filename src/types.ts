@@ -35,11 +35,13 @@ export interface Card {
 }
 
 export type ThemePref = 'system' | 'light' | 'dark';
+export type TabOpenBehavior = 'new-tab' | 'current-tab';
 
 export interface Meta {
   activeBoardId: string | null;
   theme: ThemePref;
   schemaVersion: number;
+  openBehavior?: TabOpenBehavior;
 }
 
 /** Full persisted graph, used to hydrate the in-memory store. */

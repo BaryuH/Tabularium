@@ -72,11 +72,18 @@ body {
 
 .brand {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: var(--gap) 24px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
   border-bottom: 1px solid var(--border);
   grid-column: 1 / -1;
+}
+
+.brand__actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .brand__name {
@@ -695,7 +702,6 @@ body {
 
 /* ── Theme toggle ────────────────────────────────────────────── */
 .theme-toggle {
-  margin-left: auto;
   padding: 4px 10px;
   font-size: 12px;
   font-weight: 500;
@@ -957,4 +963,181 @@ body {
 .note-panel__textarea::placeholder {
   color: var(--text-muted);
   opacity: 0.5;
+}
+
+/* ── Settings modal ─────────────────────────────────────────── */
+.settings-modal-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.settings-modal-container--open {
+  display: flex;
+  pointer-events: auto;
+}
+
+.settings-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: backdrop-fade-in 0.2s ease;
+}
+
+.settings-modal {
+  position: relative;
+  width: 520px;
+  max-width: 92vw;
+  max-height: 85vh;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  animation: modal-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.settings-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-modal__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.settings-modal__body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-section__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.settings-section__desc {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.settings-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-radio {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.settings-radio:hover {
+  border-color: var(--accent);
+}
+
+.settings-radio--active {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.settings-radio input[type="radio"] {
+  margin-top: 3px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.settings-radio__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-radio__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.settings-radio__subtext {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.settings-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.settings-btn:hover {
+  background: var(--surface);
+  border-color: var(--accent);
+}
+
+.settings-btn:active {
+  transform: scale(0.97);
 }
