@@ -37,9 +37,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # ── Editor / IDE cruft ───────────────────────────────────────────
-.vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
+.vscode/
 .idea/
 *.code-workspace
 .cursor/
