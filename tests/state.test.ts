@@ -178,3 +178,12 @@ it('store.importSnapshot refreshes in-memory state with imported data', async ()
   expect(store.cardsOfColumn('imp-c').map((c) => c.title)).toEqual(['Card X']);
   expect(store.activeBoard()?.id).toBe('imp-b');
 });
+
+it('setSidebarCollapsed updates meta.sidebarCollapsed', async () => {
+  expect(store.getState().meta.sidebarCollapsed).toBeUndefined();
+  await store.setSidebarCollapsed(true);
+  expect(store.getState().meta.sidebarCollapsed).toBe(true);
+
+  await store.setSidebarCollapsed(false);
+  expect(store.getState().meta.sidebarCollapsed).toBe(false);
+});
