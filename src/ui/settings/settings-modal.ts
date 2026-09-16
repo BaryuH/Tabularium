@@ -6,7 +6,7 @@
  * 2. Export full IndexedDB data to JSON backup file
  * 3. Import & restore full data from JSON backup file with validation & confirmation
  */
-import { iconDownload, iconUpload, iconX } from '../icons';
+import { iconDownload, iconGear, iconUpload, iconX } from '../icons';
 import { showToast } from '../toast';
 import { importCsvToStore, serializeSnapshotToCsv } from '../../util/csv';
 import type { Store } from '../../state/store';
@@ -44,7 +44,10 @@ export function createSettingsModal(store: Store): SettingsModal {
       <div class="settings-modal__backdrop" data-action="close-settings"></div>
       <div class="settings-modal" role="dialog" aria-modal="true" aria-label="Settings">
         <header class="settings-modal__head">
-          <h2 class="settings-modal__title">Settings</h2>
+          <div class="settings-modal__title-row">
+            ${iconGear}
+            <h2 class="settings-modal__title">Settings</h2>
+          </div>
           <button class="icon-btn" data-action="close-settings" title="Close (Esc)">${iconX}</button>
         </header>
 
@@ -52,24 +55,41 @@ export function createSettingsModal(store: Store): SettingsModal {
           <!-- Section 1: Tab Open Behavior -->
           <section class="settings-section">
             <h3 class="settings-section__title">Tab Opening Behavior</h3>
-            <p class="settings-section__desc">Choose how links open when you click on a tab card on your board.</p>
+            <p class="settings-section__desc">Choose where links navigate when you click a tab card on your board.</p>
 
-            <div class="settings-radio-group" role="radiogroup" aria-label="Tab Opening Behavior">
-              <label class="settings-radio ${openBehavior === 'new-tab' ? 'settings-radio--active' : ''}">
-                <input type="radio" name="openBehavior" value="new-tab" ${openBehavior === 'new-tab' ? 'checked' : ''} />
-                <span class="settings-radio__content">
-                  <span class="settings-radio__label">Open in new tab (Recommended)</span>
-                  <span class="settings-radio__subtext">Activates matching tab if already open, or opens a new tab. Keeps Tabularium open.</span>
+            <div class="settings-options" role="radiogroup" aria-label="Tab Opening Behavior">
+              <button
+                type="button"
+                class="settings-option ${openBehavior === 'new-tab' ? 'settings-option--active' : ''}"
+                data-action="set-open-behavior"
+                data-value="new-tab"
+                role="radio"
+                aria-checked="${openBehavior === 'new-tab'}"
+              >
+                <span class="settings-option__indicator"></span>
+                <span class="settings-option__content">
+                  <span class="settings-option__label">
+                    Open in new tab
+                    <span class="settings-badge">Recommended</span>
+                  </span>
+                  <span class="settings-option__desc">Activates existing tab if already open, or creates a new tab. Keeps Tabularium open.</span>
                 </span>
-              </label>
+              </button>
 
-              <label class="settings-radio ${openBehavior === 'current-tab' ? 'settings-radio--active' : ''}">
-                <input type="radio" name="openBehavior" value="current-tab" ${openBehavior === 'current-tab' ? 'checked' : ''} />
-                <span class="settings-radio__content">
-                  <span class="settings-radio__label">Open in current tab</span>
-                  <span class="settings-radio__subtext">Navigates directly in this tab without keeping Tabularium open.</span>
+              <button
+                type="button"
+                class="settings-option ${openBehavior === 'current-tab' ? 'settings-option--active' : ''}"
+                data-action="set-open-behavior"
+                data-value="current-tab"
+                role="radio"
+                aria-checked="${openBehavior === 'current-tab'}"
+              >
+                <span class="settings-option__indicator"></span>
+                <span class="settings-option__content">
+                  <span class="settings-option__label">Open in current tab</span>
+                  <span class="settings-option__desc">Navigates directly in this tab without keeping Tabularium open in the background.</span>
                 </span>
-              </label>
+              </button>
             </div>
           </section>
 
@@ -78,45 +98,49 @@ export function createSettingsModal(store: Store): SettingsModal {
             <h3 class="settings-section__title">Data Backup & Restore</h3>
             <p class="settings-section__desc">Export your boards, columns, and cards to JSON or CSV spreadsheet, or restore from a backup file.</p>
 
-            <div class="settings-actions">
-              <button class="settings-btn" data-action="export-json" title="Download JSON backup file">
-                ${iconDownload}
-                <span>Export JSON</span>
-              </button>
+            <div class="settings-data-list">
+              <!-- JSON Row -->
+              <div class="settings-data-row">
+                <div class="settings-data-row__info">
+                  <span class="settings-data-row__title">Full Backup (JSON)</span>
+                  <span class="settings-data-row__desc">Complete snapshot of all boards, columns, cards, and preferences.</span>
+                </div>
+                <div class="settings-data-row__actions">
+                  <button class="settings-btn" data-action="export-json" title="Download JSON backup file">
+                    ${iconDownload}
+                    <span>Export</span>
+                  </button>
+                  <button class="settings-btn" data-action="trigger-import" title="Restore from JSON backup file">
+                    ${iconUpload}
+                    <span>Import</span>
+                  </button>
+                  <input type="file" class="settings-file-input" accept=".json" style="display: none;" />
+                </div>
+              </div>
 
-              <button class="settings-btn" data-action="trigger-import" title="Restore from JSON backup file">
-                ${iconUpload}
-                <span>Import JSON</span>
-              </button>
-              <input type="file" class="settings-file-input" accept=".json" style="display: none;" />
-
-              <button class="settings-btn" data-action="export-csv" title="Download CSV spreadsheet">
-                ${iconDownload}
-                <span>Export CSV</span>
-              </button>
-
-              <button class="settings-btn" data-action="trigger-import-csv" title="Import cards from CSV spreadsheet">
-                ${iconUpload}
-                <span>Import CSV</span>
-              </button>
-              <input type="file" class="settings-csv-file-input" accept=".csv,text/csv" style="display: none;" />
+              <!-- CSV Row -->
+              <div class="settings-data-row">
+                <div class="settings-data-row__info">
+                  <span class="settings-data-row__title">Spreadsheet (CSV)</span>
+                  <span class="settings-data-row__desc">Excel, Google Sheets, and Notion compatible list of cards.</span>
+                </div>
+                <div class="settings-data-row__actions">
+                  <button class="settings-btn" data-action="export-csv" title="Download CSV spreadsheet">
+                    ${iconDownload}
+                    <span>Export</span>
+                  </button>
+                  <button class="settings-btn" data-action="trigger-import-csv" title="Import cards from CSV spreadsheet">
+                    ${iconUpload}
+                    <span>Import</span>
+                  </button>
+                  <input type="file" class="settings-csv-file-input" accept=".csv,text/csv" style="display: none;" />
+                </div>
+              </div>
             </div>
           </section>
         </div>
       </div>
     `;
-
-    // Wire Radio change
-    container.querySelectorAll<HTMLInputElement>('input[name="openBehavior"]').forEach((radio) => {
-      radio.addEventListener('change', () => {
-        const val = radio.value as TabOpenBehavior;
-        void store.setOpenBehavior(val).then(() => {
-          showToast(`Tab click behavior set to: ${val === 'new-tab' ? 'New tab' : 'Current tab'}`);
-          renderContent();
-        });
-      });
-    });
-
     // Wire Import file input
     const fileInput = container.querySelector<HTMLInputElement>('.settings-file-input');
     if (fileInput) {
@@ -219,6 +243,20 @@ export function createSettingsModal(store: Store): SettingsModal {
     if (target.closest('[data-action="close-settings"]')) {
       event.preventDefault();
       close();
+      return;
+    }
+
+    // Option button click
+    const optionBtn = target.closest<HTMLElement>('[data-action="set-open-behavior"]');
+    if (optionBtn) {
+      event.preventDefault();
+      const val = optionBtn.dataset.value as TabOpenBehavior;
+      if (val) {
+        void store.setOpenBehavior(val).then(() => {
+          showToast(`Tab click behavior set to: ${val === 'new-tab' ? 'New tab' : 'Current tab'}`);
+          renderContent();
+        });
+      }
       return;
     }
 
