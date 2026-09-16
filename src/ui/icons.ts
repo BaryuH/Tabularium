@@ -23,3 +23,9 @@ export const iconUpload = glyph('<path d="M8 11V3M4.5 6.5L8 3l3.5 3.5M3 13h10" /
 export const iconPencil = glyph('<path d="M11.5 2.5l2 2L4.5 13.5H2.5v-2L11.5 2.5z" />');
 export const iconSidebar = glyph('<rect x="2.5" y="3" width="11" height="10" rx="1.5" /><path d="M6 3v10" />');
 export const iconChevronLeft = glyph('<path d="M10 4L6 8l4 4" />');
+export const iconSun = glyph(
+  '<circle cx="8" cy="8" r="3" /><path d="M8 1.5v1.5M8 13v1.5M1.5 8h1.5M13 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" />',
+);
+export const iconMoon = glyph(
+  '<path d="M13.2 9.4A5.5 5.5 0 016.6 2.8 5.5 5.5 0 1013.2 9.4z" />',
+);

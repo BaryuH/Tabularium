@@ -64,7 +64,7 @@ export function createStore(repo: Repo): Store {
     boards: {},
     columns: {},
     cards: {},
-    meta: { activeBoardId: null, theme: 'system', schemaVersion: DB_VERSION },
+    meta: { activeBoardId: null, theme: 'dark', schemaVersion: DB_VERSION },
   };
   const listeners = new Set<() => void>();
 

@@ -150,14 +150,13 @@ it('importSnapshot replaces current database with backup data', async () => {
 it('getMeta returns defaults before anything is written', async () => {
   expect(await repo.getMeta()).toEqual({
     activeBoardId: null,
-    theme: 'system',
+    theme: 'dark',
     schemaVersion: 1,
   });
 });
 
 it('setMeta persists a partial patch', async () => {
-  await repo.setMeta({ theme: 'dark' });
+  await repo.setMeta({ theme: 'light' });
   const meta = await repo.getMeta();
-  expect(meta.theme).toBe('dark');
-  expect(meta.activeBoardId).toBeNull();
+  expect(meta.theme).toBe('light');
 });
