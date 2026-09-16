@@ -39,6 +39,7 @@ export interface Repo {
   getMeta(): Promise<Meta>;
   setMeta(patch: Partial<Meta>): Promise<Meta>;
   getSnapshot(): Promise<Snapshot>;
+  importSnapshot(snapshot: Snapshot): Promise<void>;
   ensureSeed(): Promise<void>;
 }
 
@@ -342,6 +343,35 @@ export function createRepo(db: IDBDatabase): Repo {
     };
   };
 
+  const importSnapshot = async (snapshot: Snapshot): Promise<void> => {
+    if (!snapshot || !Array.isArray(snapshot.boards) || !Array.isArray(snapshot.columns) || !Array.isArray(snapshot.cards)) {
+      throw new Error('Invalid backup file format');
+    }
+    const tx = db.transaction(
+      [STORE.boards, STORE.columns, STORE.cards, STORE.meta],
+      'readwrite',
+    );
+    const bStore = tx.objectStore(STORE.boards);
+    const cStore = tx.objectStore(STORE.columns);
+    const cdStore = tx.objectStore(STORE.cards);
+    const mStore = tx.objectStore(STORE.meta);
+
+    // Clear existing data
+    bStore.clear();
+    cStore.clear();
+    cdStore.clear();
+    mStore.clear();
+
+    // Put backup data
+    for (const b of snapshot.boards) bStore.put(b);
+    for (const c of snapshot.columns) cStore.put(c);
+    for (const cd of snapshot.cards) cdStore.put(cd);
+    if (snapshot.meta) {
+      mStore.put(snapshot.meta, META_KEY);
+    }
+    await txDone(tx);
+  };
+
   /**
    * Seed a default board (+ Inbox) and active-board pointer on first run.
    * The empty-check and writes share one readwrite transaction so concurrent
@@ -404,6 +434,7 @@ export function createRepo(db: IDBDatabase): Repo {
     getMeta,
     setMeta,
     getSnapshot,
+    importSnapshot,
     ensureSeed,
   };
 }

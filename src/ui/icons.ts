@@ -15,3 +15,8 @@ export const iconTrash = glyph(
 export const iconTask = glyph('<circle cx="8" cy="8" r="5" />');
 export const iconTaskDone = glyph('<circle cx="8" cy="8" r="5" fill="currentColor" fill-opacity="0.25" /><path d="M5.5 8l2 2 3.5-3.5" />');
 export const iconNote = glyph('<path d="M4 3.5h8M4 6.5h8M4 9.5h6M4 12.5h4" />');
+export const iconGear = glyph(
+  '<circle cx="8" cy="8" r="2.5" /><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.75 3.75l1.06 1.06M11.19 11.19l1.06 1.06M3.75 12.25l1.06-1.06M11.19 4.81l1.06-1.06" />',
+);
+export const iconDownload = glyph('<path d="M8 3v8M4.5 7.5L8 11l3.5-3.5M3 13h10" />');
+export const iconUpload = glyph('<path d="M8 11V3M4.5 6.5L8 3l3.5 3.5M3 13h10" />');
