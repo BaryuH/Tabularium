@@ -7,6 +7,7 @@ import { tryCreateTabAdapter, onExternalChange } from './tabs/adapter';
 import { resolveTarget } from './tabs/resolve';
 import { applyTheme, revealBody } from './theme';
 import { createBoardView } from './ui/board/board-view';
+import { createNotePanel } from './ui/note/note-panel';
 import { createSidebarView } from './ui/sidebar/sidebar-view';
 import { setupDnD } from './dnd';
 import type { ThemePref } from './types';
@@ -47,11 +48,16 @@ async function bootstrap(): Promise<void> {
   if (!app) return;
   app.innerHTML = LAYOUT;
 
+  // Note editor panel (spacious slide-over drawer)
+  const notePanel = createNotePanel(store);
+  notePanel.mount(app);
+
   // Board + card-click (activate matching tab or open new)
   const tabAdapter = tryCreateTabAdapter();
   const boardRoot = app.querySelector<HTMLElement>('#board-root');
   if (boardRoot) {
     createBoardView(store, {
+      notePanel,
       onCardClick: tabAdapter
         ? async (url) => {
             const tabs = await tabAdapter.queryCurrentWindow();

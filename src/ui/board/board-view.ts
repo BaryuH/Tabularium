@@ -11,6 +11,7 @@ import { iconPlus, iconTrash, iconX, iconTask, iconTaskDone, iconNote } from '..
 import { escapeHtml, hostOf } from '../../util';
 import type { Board, Card, CardKind, Column } from '../../types';
 import type { Store } from '../../state/store';
+import type { NotePanel } from '../note/note-panel';
 
 const BOARD_ICONS = ['📁', '🏛️', '💼', '🚀', '🎯', '📚', '💡', '🛠️', '🎨', '🔬', '⚡', '🌟', '📌', '☕', '🧠', '🌿'] as const;
 
@@ -25,6 +26,7 @@ type Editing =
 
 export interface BoardViewOptions {
   onCardClick?: (url: string) => void;
+  notePanel?: NotePanel;
 }
 
 export interface BoardView {
@@ -55,12 +57,16 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     const hostLine = kind === 'tab' && card.url
       ? `<span class="card__host">${escapeHtml(hostOf(card.url))}</span>`
       : '';
+    const noteSnippet = kind === 'note' && card.note?.trim()
+      ? `<span class="card__snippet">${escapeHtml(card.note.slice(0, 90))}${card.note.length > 90 ? '…' : ''}</span>`
+      : '';
     const doneCls = isDone ? ' card--done' : '';
     return `<article class="card card--${kind}${doneCls}" draggable="true" tabindex="0" role="${kind === 'task' ? 'checkbox' : 'link'}" ${kind === 'task' ? `aria-checked="${isDone}"` : ''} data-id="${card.id}">
       ${indicator}
       <span class="card__body">
         <span class="card__title">${escapeHtml(label)}</span>
         ${hostLine}
+        ${noteSnippet}
       </span>
       <button class="icon-btn icon-btn--sm card__del" data-action="delete-card" data-id="${card.id}" title="Remove">${iconX}</button>
     </article>`;
@@ -242,6 +248,10 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
           void store.toggleTaskComplete(card.dataset.id);
           return;
         }
+        if (cardData.kind === 'note') {
+          opts?.notePanel?.open(card.dataset.id);
+          return;
+        }
         if (opts?.onCardClick) opts.onCardClick(cardData.url);
       }
     }
@@ -278,7 +288,15 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         if (id) setEditing({ kind: 'new-task', columnId: id });
         break;
       case 'add-note':
-        if (id) setEditing({ kind: 'new-note', columnId: id });
+        if (id) {
+          if (opts?.notePanel) {
+            void store.createCard(id, { url: '', title: '', kind: 'note' }).then((c) => {
+              opts.notePanel?.open(c.id);
+            });
+          } else {
+            setEditing({ kind: 'new-note', columnId: id });
+          }
+        }
         break;
       case 'toggle-task':
         if (id) void store.toggleTaskComplete(id);
@@ -321,6 +339,11 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
           if (cardData.kind === 'task') {
             event.preventDefault();
             void store.toggleTaskComplete(card.dataset.id);
+            return;
+          }
+          if (cardData.kind === 'note') {
+            event.preventDefault();
+            opts?.notePanel?.open(card.dataset.id);
             return;
           }
           if (event.key === 'Enter' && opts?.onCardClick) {
