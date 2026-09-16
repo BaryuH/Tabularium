@@ -5,8 +5,10 @@ import manifest from './manifest.json';
 export default defineConfig({
   plugins: [crx({ manifest })],
   build: {
-    target: 'esnext',
+    target: 'es2022',
     emptyOutDir: true,
+    cssMinify: true,
+    minify: 'esbuild',
   },
   test: {
     environment: 'node',
