@@ -38,23 +38,59 @@ const LAYOUT = `
   </div>
 `;
 
+const CACHE_THEME_KEY = 'tabularium_theme';
+const CACHE_SIDEBAR_KEY = 'tabularium_sidebar';
 
+function getCachedTheme(): ThemePref {
+  const cached = localStorage.getItem(CACHE_THEME_KEY);
+  return cached === 'light' ? 'light' : 'dark';
+}
+
+function getCachedSidebar(): boolean {
+  return localStorage.getItem(CACHE_SIDEBAR_KEY) === '1';
+}
 
 async function bootstrap(): Promise<void> {
+  const app = document.querySelector<HTMLElement>('#app');
+  if (!app) return;
+
+  // ── 1. Synchronous Instant Shell Render (0ms critical path) ──────────────
+  // Render shell, apply cached theme, restore sidebar rail, reveal body immediately.
+  const initialTheme = getCachedTheme();
+  applyTheme(initialTheme);
+
+  const initialSidebar = getCachedSidebar();
+  app.innerHTML = LAYOUT;
+
+  const layout = app.querySelector<HTMLElement>('.layout');
+  if (layout && initialSidebar) {
+    layout.classList.add('layout--sidebar-collapsed');
+  }
+  revealBody();
+
+  // ── 2. Asynchronous Store & DB Hydration (runs in background) ────────────
   const db = await openDatabase();
   const store = createStore(createRepo(db));
   await store.hydrate();
 
-  // Apply theme before first paint, then reveal body (anti-FOUC).
-  applyTheme(store.getState().meta.theme);
-  revealBody();
+  // Reconcile and cache theme & sidebar state from IndexedDB
+  const currentTheme = store.getState().meta.theme;
+  applyTheme(currentTheme);
+  localStorage.setItem(CACHE_THEME_KEY, currentTheme);
+
+  const currentSidebar = Boolean(store.getState().meta.sidebarCollapsed);
+  layout?.classList.toggle('layout--sidebar-collapsed', currentSidebar);
+  localStorage.setItem(CACHE_SIDEBAR_KEY, currentSidebar ? '1' : '0');
+
+  store.subscribe(() => {
+    const nextTheme = store.getState().meta.theme;
+    localStorage.setItem(CACHE_THEME_KEY, nextTheme);
+    const nextSidebar = Boolean(store.getState().meta.sidebarCollapsed);
+    localStorage.setItem(CACHE_SIDEBAR_KEY, nextSidebar ? '1' : '0');
+  });
 
   // Refresh state when the service worker saves a tab (M9 quick-save).
   onExternalChange(() => { void store.applyExternalChange(); });
-
-  const app = document.querySelector<HTMLElement>('#app');
-  if (!app) return;
-  app.innerHTML = LAYOUT;
 
   // Note editor panel (spacious slide-over drawer)
   const notePanel = createNotePanel(store);
@@ -99,7 +135,6 @@ async function bootstrap(): Promise<void> {
   if (sidebarRoot) createSidebarView(tabAdapter, store).mount(sidebarRoot);
 
   // Drag-and-drop & layout collapse state
-  const layout = app.querySelector<HTMLElement>('.layout');
   if (layout) {
     setupDnD(layout, store);
     const updateLayout = (): void => {
