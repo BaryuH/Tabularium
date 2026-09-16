@@ -125,7 +125,6 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     return `<div class="column__add-row">
       <button class="column__add-btn" data-action="add-task" data-id="${columnId}" title="Add task">${iconListTodo}<span>Task</span></button>
       <button class="column__add-btn" data-action="add-note" data-id="${columnId}" title="Add note">${iconNote}<span>Note</span></button>
-      <button class="column__add-btn" data-action="stash-window" data-id="${columnId}" title="Stash open tabs here to free RAM">${iconWindow}<span>Window</span></button>
     </div>`;
   };
 
@@ -158,6 +157,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         ${iconBtn}
         ${name}
         <span class="column__count">${cards.length}</span>
+        ${cards.length ? `<button class="icon-btn icon-btn--sm column__restore" data-action="restore-column-window" data-id="${column.id}" title="Open all tabs in this column as a new window (${cards.length} tabs)">${iconExternalLink}</button>` : ''}
         <button class="icon-btn icon-btn--sm column__del" data-action="delete-column" data-id="${column.id}" title="Delete column">${iconTrash}</button>
       </header>
       ${picker}
@@ -203,7 +203,10 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     const adder =
       editing?.kind === 'new-column'
         ? `<div class="column column--add">${inputHtml('', 'Column name')}</div>`
-        : `<div class="column column--add"><button class="add-column" data-action="add-column">${iconPlus}<span>Add column</span></button></div>`;
+        : `<div class="column column--add">
+            <button class="add-column" data-action="add-column">${iconPlus}<span>Add column</span></button>
+            <button class="add-column add-column--stash" data-action="stash-window-new-column" title="Stash current window as a new column (0% RAM)">${iconWindow}<span>Stash window</span></button>
+          </div>`;
     return `<div class="columns">${columns}${adder}</div>`;
   };
 
@@ -320,7 +323,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     }
   };
 
-  const stashCurrentWindow = async (columnId: string): Promise<void> => {
+  const stashCurrentWindowToColumn = async (boardId: string): Promise<void> => {
     if (!opts?.tabAdapter) {
       showToast('Open tabs adapter unavailable in preview mode.');
       return;
@@ -345,10 +348,10 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       favIconUrl: t.favIconUrl,
     }));
 
-    await store.saveWindowSession(columnId, items);
+    const col = await store.stashWindowToNewColumn(boardId, items);
     const tabIds = stashable.map((t) => t.id);
     await opts.tabAdapter.closeTabs(tabIds);
-    showToast(`Stashed ${items.length} tabs · 0% RAM consumed`);
+    showToast(`Stashed ${items.length} tabs into "${col.name}" · 0% RAM consumed`);
   };
   const handleAction = (el: HTMLElement): void => {
     const id = el.dataset.id;
@@ -379,11 +382,27 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
           }
         }
         break;
-      case 'stash-window':
+      case 'restore-column-window':
         if (id) {
-          void stashCurrentWindow(id);
+          const cards = store.cardsOfColumn(id);
+          const urls = cards.map((c) => c.url).filter(Boolean);
+          if (urls.length > 0) {
+            if (opts?.tabAdapter) {
+              void opts.tabAdapter.createWindow(urls);
+            } else {
+              for (const u of urls) window.open(u, '_blank');
+            }
+            showToast(`Restoring ${urls.length} tabs in a new window`);
+          } else {
+            showToast('No web tabs to restore in this column.');
+          }
         }
         break;
+      case 'stash-window-new-column': {
+        const active = store.activeBoard();
+        if (active) void stashCurrentWindowToColumn(active.id);
+        break;
+      }
       case 'rename-column':
         if (id) setEditing({ kind: 'rename-column', id });
         break;

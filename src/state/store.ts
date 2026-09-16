@@ -45,7 +45,7 @@ export interface Store {
   setColumnIcon(id: string, icon?: string): Promise<void>;
   deleteColumn(id: string): Promise<void>;
   reorderColumns(boardId: string, orderedIds: string[]): Promise<void>;
-
+  stashWindowToNewColumn(boardId: string, tabs: WindowTabItem[], columnName?: string): Promise<Column>;
   createCard(columnId: string, data: NewCard): Promise<Card>;
   updateCard(id: string, patch: CardPatch): Promise<void>;
   saveWindowSession(columnId: string, tabs: WindowTabItem[], title?: string): Promise<Card>;
@@ -197,6 +197,20 @@ export function createStore(repo: Repo): Store {
       return card;
     },
 
+    async stashWindowToNewColumn(boardId, tabs, customName) {
+      const name = customName?.trim() || `${formatDateTag()} Window (${tabs.length} tabs)`;
+      const column = await repo.createColumn(boardId, name, '🪟');
+      for (const tab of tabs) {
+        await repo.createCard(column.id, {
+          url: tab.url,
+          title: tab.title,
+          favIconUrl: tab.favIconUrl,
+          kind: 'tab',
+        });
+      }
+      await refresh();
+      return column;
+    },
     async toggleTaskComplete(cardId) {
       const card = state.cards[cardId];
       if (!card) return;

@@ -419,9 +419,19 @@ body {
   padding: 1px 7px;
 }
 
-.column__del {
+.column__restore {
   margin-left: auto;
   opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.column:hover .column__restore {
+  opacity: 1;
+}
+
+.column__del {
+  opacity: 0;
+  transition: opacity 0.15s ease;
 }
 
 .column:hover .column__del {
@@ -448,6 +458,9 @@ body {
   flex: 0 0 240px;
   background: none;
   border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .add-column {
@@ -462,12 +475,24 @@ body {
   border: 1px dashed var(--border);
   border-radius: var(--radius);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
 .add-column:hover {
   color: var(--text);
   border-color: var(--text-muted);
+  background: var(--surface-2);
+}
+
+.add-column--stash {
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+.add-column--stash:hover {
+  border-color: var(--window-accent);
+  color: var(--window-accent);
+  background: var(--surface-2);
 }
 
 /* ── Cards ───────────────────────────────────────────────────── */

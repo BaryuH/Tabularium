@@ -219,3 +219,19 @@ it('saveWindowSession creates a card with kind window and tabs array', async () 
   const inCol = store.cardsOfColumn(colId);
   expect(inCol.find((c) => c.id === card.id)?.tabs).toHaveLength(2);
 });
+
+it('stashWindowToNewColumn creates a new column and populates tabs as cards', async () => {
+  const boardId = store.boardsSorted()[0].id;
+  const tabs = [
+    { id: '10', url: 'https://news.ycombinator.com', title: 'Hacker News' },
+    { id: '11', url: 'https://docs.github.com', title: 'Docs' },
+  ];
+  const col = await store.stashWindowToNewColumn(boardId, tabs, 'HN & Docs');
+  expect(col.name).toBe('HN & Docs');
+  expect(col.icon).toBe('🪟');
+
+  const cards = store.cardsOfColumn(col.id);
+  expect(cards).toHaveLength(2);
+  expect(cards[0].title).toBe('Hacker News');
+  expect(cards[1].title).toBe('Docs');
+});

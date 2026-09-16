@@ -63,7 +63,7 @@ export function createSidebarView(adapter: TabAdapter | null, store: Store): Sid
 
     const count = `<span class="sidebar__count">${tabs.length}</span>`;
     const stashBtn = !collapsed && tabs.length
-      ? `<button class="icon-btn icon-btn--sm" data-action="stash-sidebar-window" title="Stash all open tabs into first column (free RAM)">${iconWindow}</button>`
+      ? `<button class="icon-btn icon-btn--sm" data-action="stash-sidebar-window" title="Stash all open tabs into a new column (0% RAM)">${iconWindow}</button>`
       : '';
     const header = collapsed
       ? `<div class="sidebar__header sidebar__header--collapsed">${toggleBtn}</div>`
@@ -91,9 +91,6 @@ export function createSidebarView(adapter: TabAdapter | null, store: Store): Sid
     }
     const active = store.activeBoard();
     if (!active) return;
-    const columns = store.columnsOfBoard(active.id);
-    const targetCol = columns[0];
-    if (!targetCol) return;
 
     const openTabs = await adapter.queryCurrentWindow();
     const stashable = openTabs.filter(
@@ -115,9 +112,9 @@ export function createSidebarView(adapter: TabAdapter | null, store: Store): Sid
       favIconUrl: t.favIconUrl,
     }));
 
-    await store.saveWindowSession(targetCol.id, items);
+    const col = await store.stashWindowToNewColumn(active.id, items);
     await adapter.closeTabs(stashable.map((t) => t.id));
-    showToast(`Stashed ${items.length} tabs to ${targetCol.name} · 0% RAM consumed`);
+    showToast(`Stashed ${items.length} tabs into new column "${col.name}" · 0% RAM`);
   };
 
   const onClick = (event: MouseEvent): void => {
