@@ -23,7 +23,7 @@ describe('serializeSnapshotToCsv', () => {
           savedAt: 1000,
         },
       ],
-      meta: { activeBoardId: 'b1', theme: 'system', schemaVersion: 1 },
+      meta: { activeBoardId: 'b1', theme: 'dark', schemaVersion: 1 },
     };
 
     const csv = serializeSnapshotToCsv(snapshot);

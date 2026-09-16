@@ -59,7 +59,7 @@ function txDone(tx: IDBTransaction): Promise<void> {
 }
 
 function defaultMeta(): Meta {
-  return { activeBoardId: null, theme: 'system', schemaVersion: DB_VERSION };
+  return { activeBoardId: null, theme: 'dark', schemaVersion: DB_VERSION };
 }
 
 export function createRepo(db: IDBDatabase): Repo {
@@ -408,8 +408,7 @@ export function createRepo(db: IDBDatabase): Repo {
         };
         columnsStore.put(col);
       });
-
-      const meta: Meta = { activeBoardId: boardId, theme: 'system', schemaVersion: DB_VERSION };
+      const meta: Meta = { activeBoardId: boardId, theme: 'dark', schemaVersion: DB_VERSION };
       tx.objectStore(STORE.meta).put(meta, META_KEY);
     };
     tx.oncomplete = () => resolve();

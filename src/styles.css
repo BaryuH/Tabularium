@@ -1,4 +1,18 @@
 :root {
+  --bg: #161619;
+  --surface: #1e1e22;
+  --surface-2: #26262c;
+  --border: #33333b;
+  --text: #ececee;
+  --text-muted: #9a9aa3;
+  --accent: #928ee8;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --gap: 16px;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
   --bg: #faf9f7;
   --surface: #ffffff;
   --surface-2: #f2f1ed;
@@ -6,27 +20,9 @@
   --text: #201f1c;
   --text-muted: #7a766e;
   --accent: #5a56c4;
-  --radius: 10px;
-  --radius-sm: 6px;
-  --gap: 16px;
   color-scheme: light;
 }
 
-/* Dark: via OS preference unless explicitly overridden to light */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #161619;
-    --surface: #1e1e22;
-    --surface-2: #26262c;
-    --border: #33333b;
-    --text: #ececee;
-    --text-muted: #9a9aa3;
-    --accent: #928ee8;
-    color-scheme: dark;
-  }
-}
-
-/* Dark: explicit override */
 :root[data-theme="dark"] {
   --bg: #161619;
   --surface: #1e1e22;
@@ -764,23 +760,27 @@ body {
 
 /* ── Theme toggle ────────────────────────────────────────────── */
 .theme-toggle {
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
   color: var(--text-muted);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  align-self: center;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
 }
 
 .theme-toggle:hover {
   color: var(--text);
-  background: var(--surface);
+  background: var(--surface-2);
+}
+
+.theme-toggle:active {
+  transform: scale(0.92);
 }
 
 /* ── Drag-and-drop indicators ────────────────────────────────── */

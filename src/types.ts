@@ -34,7 +34,7 @@ export interface Card {
   note?: string;
 }
 
-export type ThemePref = 'system' | 'light' | 'dark';
+export type ThemePref = 'light' | 'dark';
 export type TabOpenBehavior = 'new-tab' | 'current-tab';
 
 export interface Meta {

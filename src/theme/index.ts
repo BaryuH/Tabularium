@@ -1,27 +1,17 @@
 /**
  * Theme application. Sets `data-theme` on `<html>` to drive CSS vars.
- *
- * - absent / "system" → OS preference via `@media (prefers-color-scheme)`.
- * - "light" / "dark"  → explicit override.
+ * Only light and dark modes supported (no system mode).
  */
 import type { ThemePref } from '../types';
 
 export function applyTheme(pref: ThemePref): void {
-  if (pref === 'system') {
-    document.documentElement.removeAttribute('data-theme');
-  } else {
-    document.documentElement.setAttribute('data-theme', pref);
-  }
+  const theme = pref === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
 }
 
-/** Resolve the effective mode for a given preference and OS dark flag. */
-export function resolveEffective(
-  pref: ThemePref,
-  systemIsDark: boolean,
-): 'light' | 'dark' {
-  if (pref === 'light') return 'light';
-  if (pref === 'dark') return 'dark';
-  return systemIsDark ? 'dark' : 'light';
+/** Resolve the effective mode ('light' | 'dark'). */
+export function resolveEffective(pref: ThemePref): 'light' | 'dark' {
+  return pref === 'light' ? 'light' : 'dark';
 }
 
 /** Reveal the body after the theme is applied (anti-FOUC). */

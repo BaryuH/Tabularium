@@ -11,7 +11,7 @@ import { createCardEditModal } from './ui/card/card-edit-modal';
 import { createNotePanel } from './ui/note/note-panel';
 import { createSettingsModal } from './ui/settings/settings-modal';
 import { createSidebarView } from './ui/sidebar/sidebar-view';
-import { iconGear } from './ui/icons';
+import { iconGear, iconMoon, iconSun } from './ui/icons';
 import { setupDnD } from './dnd';
 import type { ThemePref } from './types';
 
@@ -27,7 +27,7 @@ const LAYOUT = `
       <span class="brand__name">Tabularium</span>
       <span class="brand__tag">your tabs, filed away</span>
       <div class="brand__actions">
-        <button id="theme-toggle" class="theme-toggle" title="Toggle theme"></button>
+        <button id="theme-toggle" class="icon-btn theme-toggle" title="Toggle theme"></button>
         <button id="settings-btn" class="icon-btn settings-trigger" title="Settings">${iconGear}</button>
       </div>
     </header>
@@ -36,7 +36,7 @@ const LAYOUT = `
   </div>
 `;
 
-const THEME_CYCLE: ThemePref[] = ['system', 'light', 'dark'];
+
 
 async function bootstrap(): Promise<void> {
   const db = await openDatabase();
@@ -113,11 +113,17 @@ async function bootstrap(): Promise<void> {
   if (toggle) {
     const updateToggle = (): void => {
       const theme = store.getState().meta.theme;
-      toggle.textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
+      if (theme === 'light') {
+        toggle.innerHTML = iconMoon;
+        toggle.title = 'Switch to dark mode';
+      } else {
+        toggle.innerHTML = iconSun;
+        toggle.title = 'Switch to light mode';
+      }
     };
     toggle.addEventListener('click', () => {
       const current = store.getState().meta.theme;
-      const next = THEME_CYCLE[(THEME_CYCLE.indexOf(current) + 1) % THEME_CYCLE.length];
+      const next: ThemePref = current === 'light' ? 'dark' : 'light';
       void store.setTheme(next);
     });
     store.subscribe(() => {
