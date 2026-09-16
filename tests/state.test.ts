@@ -133,6 +133,20 @@ it('createCard with note kind and updateCard persists note content', async () =>
   expect(persisted?.note).toContain('Ship v2 rich notes');
 });
 
+it('updateCard updates title and url', async () => {
+  const inbox = store.columnsOfBoard(store.boardsSorted()[0].id)[0];
+  const card = await store.createCard(inbox.id, { url: 'https://old.com', title: 'Old Title' });
+
+  await store.updateCard(card.id, {
+    title: 'New Title',
+    url: 'https://new.com/page',
+  });
+
+  const updated = store.cardsOfColumn(inbox.id).find((c) => c.id === card.id);
+  expect(updated?.title).toBe('New Title');
+  expect(updated?.url).toBe('https://new.com/page');
+});
+
 it('applyExternalChange re-reads writes made directly against the repo', async () => {
   const inbox = store.columnsOfBoard(store.boardsSorted()[0].id)[0];
   await repo.createCard(inbox.id, { url: 'ext', title: 'ext' }); // bypasses the store

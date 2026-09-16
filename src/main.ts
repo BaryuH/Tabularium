@@ -7,6 +7,7 @@ import { tryCreateTabAdapter, onExternalChange } from './tabs/adapter';
 import { resolveTarget } from './tabs/resolve';
 import { applyTheme, revealBody } from './theme';
 import { createBoardView } from './ui/board/board-view';
+import { createCardEditModal } from './ui/card/card-edit-modal';
 import { createNotePanel } from './ui/note/note-panel';
 import { createSettingsModal } from './ui/settings/settings-modal';
 import { createSidebarView } from './ui/sidebar/sidebar-view';
@@ -57,12 +58,17 @@ async function bootstrap(): Promise<void> {
   const notePanel = createNotePanel(store);
   notePanel.mount(app);
 
+  // Card edit modal (title & link editing)
+  const cardEditModal = createCardEditModal(store);
+  cardEditModal.mount(app);
+
   // Board + card-click (activate matching tab or open new)
   const tabAdapter = tryCreateTabAdapter();
   const boardRoot = app.querySelector<HTMLElement>('#board-root');
   if (boardRoot) {
     createBoardView(store, {
       notePanel,
+      cardEditModal,
       onCardClick: tabAdapter
         ? async (url) => {
             const behavior = store.getState().meta.openBehavior ?? 'new-tab';
