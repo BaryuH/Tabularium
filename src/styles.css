@@ -56,7 +56,7 @@ body {
     Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, background-color 0.2s ease, color 0.18s ease;
 }
 
 #app {
@@ -270,6 +270,17 @@ body {
   padding-bottom: 8px;
 }
 
+@keyframes col-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .column {
   flex: 0 0 300px;
   display: flex;
@@ -278,6 +289,8 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  animation: col-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.18s ease, outline 0.15s ease, background-color 0.2s ease;
 }
 
 .column__head {
@@ -364,6 +377,17 @@ body {
 }
 
 /* ── Cards ───────────────────────────────────────────────────── */
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .card {
   display: flex;
   align-items: center;
@@ -372,11 +396,22 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  transition: border-color 0.15s;
+  animation: card-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.18s ease,
+    opacity 0.18s ease,
+    background-color 0.2s ease;
 }
 
 .card:hover {
   border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.card:active {
+  transform: scale(0.985);
 }
 
 .card__fav {
@@ -489,13 +524,17 @@ body {
   border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.1s ease;
 }
 
 .column__add-btn:hover {
   color: var(--text);
   border-color: var(--text-muted);
   background: var(--surface-2);
+}
+
+.column__add-btn:active {
+  transform: scale(0.97);
 }
 
 .card__del {
@@ -519,12 +558,16 @@ body {
   border: 1px solid transparent;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, opacity 0.15s;
+  transition: background 0.15s, color 0.15s, opacity 0.15s, transform 0.12s ease;
 }
 
 .icon-btn:hover {
   background: var(--surface-2);
   color: var(--text);
+}
+
+.icon-btn:active {
+  transform: scale(0.92);
 }
 
 .icon-btn--sm {
@@ -564,13 +607,17 @@ body {
   padding: 7px 10px;
   border-radius: var(--radius-sm);
   cursor: grab;
-  transition: background 0.15s;
+  transition: background 0.15s ease, transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .stab:hover {
   background: var(--surface-2);
+  transform: translateX(2px);
 }
 
+.stab:active {
+  transform: scale(0.98);
+}
 .stab--active {
   background: var(--surface-2);
 }
@@ -721,4 +768,16 @@ body {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
   border-color: var(--accent);
+}
+
+/* ── Motion accessibility ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
