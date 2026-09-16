@@ -40,8 +40,9 @@ export interface Store {
   setActiveBoard(id: string): Promise<void>;
   reorderBoards(orderedIds: string[]): Promise<void>;
 
-  createColumn(boardId: string, name: string): Promise<Column>;
+  createColumn(boardId: string, name: string, icon?: string): Promise<Column>;
   renameColumn(id: string, name: string): Promise<void>;
+  setColumnIcon(id: string, icon?: string): Promise<void>;
   deleteColumn(id: string): Promise<void>;
   reorderColumns(boardId: string, orderedIds: string[]): Promise<void>;
 
@@ -148,10 +149,15 @@ export function createStore(repo: Repo): Store {
       await refresh();
     },
 
-    async createColumn(boardId, name) {
-      const column = await repo.createColumn(boardId, name);
+    async createColumn(boardId, name, icon) {
+      const column = await repo.createColumn(boardId, name, icon);
       await refresh();
       return column;
+    },
+
+    async setColumnIcon(id, icon) {
+      await repo.setColumnIcon(id, icon);
+      await refresh();
     },
 
     async renameColumn(id, name) {

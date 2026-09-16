@@ -25,8 +25,9 @@ export interface Repo {
   deleteBoard(id: string): Promise<void>;
   reorderBoards(orderedIds: string[]): Promise<void>;
   listColumns(boardId: string): Promise<Column[]>;
-  createColumn(boardId: string, name: string): Promise<Column>;
+  createColumn(boardId: string, name: string, icon?: string): Promise<Column>;
   renameColumn(id: string, name: string): Promise<Column>;
+  setColumnIcon(id: string, icon?: string): Promise<Column>;
   deleteColumn(id: string): Promise<void>;
   reorderColumns(boardId: string, orderedIds: string[]): Promise<void>;
   listCards(columnId: string): Promise<Card[]>;
@@ -91,6 +92,7 @@ export function createRepo(db: IDBDatabase): Repo {
       id: crypto.randomUUID(),
       boardId: board.id,
       name: 'Inbox',
+      icon: '📥',
       order: ORDER_STEP,
     };
     const tx = db.transaction([STORE.boards, STORE.columns], 'readwrite');
@@ -162,12 +164,13 @@ export function createRepo(db: IDBDatabase): Repo {
     return rows.sort(bySortOrder);
   };
 
-  const createColumn = async (boardId: string, name: string): Promise<Column> => {
+  const createColumn = async (boardId: string, name: string, icon?: string): Promise<Column> => {
     const columns = await listColumns(boardId);
     const column: Column = {
       id: crypto.randomUUID(),
       boardId,
       name,
+      icon,
       order: nextOrder(columns),
     };
     const tx = db.transaction(STORE.columns, 'readwrite');
@@ -187,6 +190,21 @@ export function createRepo(db: IDBDatabase): Repo {
     return column;
   };
 
+
+  const setColumnIcon = async (id: string, icon?: string): Promise<Column> => {
+    const rtx = db.transaction(STORE.columns, 'readonly');
+    const column = await reqP<Column | undefined>(rtx.objectStore(STORE.columns).get(id));
+    if (!column) throw new Error(`Column not found: ${id}`);
+    if (icon) {
+      column.icon = icon;
+    } else {
+      delete column.icon;
+    }
+    const tx = db.transaction(STORE.columns, 'readwrite');
+    tx.objectStore(STORE.columns).put(column);
+    await txDone(tx);
+    return column;
+  };
   const deleteColumn = async (id: string): Promise<void> => {
     const cards = await listCards(id);
     const tx = db.transaction([STORE.columns, STORE.cards], 'readwrite');
@@ -398,12 +416,17 @@ export function createRepo(db: IDBDatabase): Repo {
       boardsStore.put(board);
 
       const columnsStore = tx.objectStore(STORE.columns);
-      const defaultColumns = ['General', 'Projects', 'Research'];
-      defaultColumns.forEach((colName, index) => {
+      const defaultColumns: Array<{ name: string; icon: string }> = [
+        { name: 'General', icon: '📥' },
+        { name: 'Projects', icon: '🚀' },
+        { name: 'Research', icon: '🔬' },
+      ];
+      defaultColumns.forEach((colSpec, index) => {
         const col: Column = {
           id: crypto.randomUUID(),
           boardId,
-          name: colName,
+          name: colSpec.name,
+          icon: colSpec.icon,
           order: (index + 1) * ORDER_STEP,
         };
         columnsStore.put(col);
@@ -428,6 +451,7 @@ export function createRepo(db: IDBDatabase): Repo {
     listColumns,
     createColumn,
     renameColumn,
+    setColumnIcon,
     deleteColumn,
     reorderColumns,
     listCards,

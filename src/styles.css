@@ -360,6 +360,27 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+.column__icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.column__icon-btn:hover {
+  background: var(--surface-2);
+  transform: scale(1.15);
+}
+
+.icon-picker--column {
+  margin: 8px 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
 .column__name {
   background: none;
   border: none;
