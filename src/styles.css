@@ -557,13 +557,28 @@ body {
   transform: scale(0.97);
 }
 
-.card__del {
+.card__actions {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
   opacity: 0;
+  transition: opacity 0.15s ease;
 }
 
-.card:hover .card__del {
+.card:hover .card__actions {
   opacity: 1;
+}
+
+.card__action-btn {
+  opacity: 0.75;
+  transition: opacity 0.12s ease, transform 0.12s ease, color 0.12s ease;
+}
+
+.card__action-btn:hover {
+  opacity: 1;
+  color: var(--text);
+  transform: scale(1.1);
 }
 
 /* ── Shared controls ─────────────────────────────────────────── */
@@ -1140,4 +1155,144 @@ body {
 
 .settings-btn:active {
   transform: scale(0.97);
+}
+
+/* ── Card edit modal ─────────────────────────────────────────── */
+.card-edit-modal-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.card-edit-modal-container--open {
+  display: flex;
+  pointer-events: auto;
+}
+
+.card-edit-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: backdrop-fade-in 0.2s ease;
+}
+
+.card-edit-modal {
+  position: relative;
+  width: 460px;
+  max-width: 92vw;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  animation: modal-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.card-edit-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-edit-modal__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+}
+
+.card-edit-modal__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.card-edit-modal__form {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card-edit__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.card-edit__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.card-edit__input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.card-edit__input:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+.card-edit-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.card-edit__btn {
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.12s ease, transform 0.1s ease;
+}
+
+.card-edit__btn:active {
+  transform: scale(0.97);
+}
+
+.card-edit__btn--secondary {
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid transparent;
+}
+
+.card-edit__btn--secondary:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.card-edit__btn--primary {
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.card-edit__btn--primary:hover {
+  opacity: 0.9;
 }

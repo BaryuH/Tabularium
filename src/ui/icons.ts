@@ -20,3 +20,4 @@ export const iconGear = glyph(
 );
 export const iconDownload = glyph('<path d="M8 3v8M4.5 7.5L8 11l3.5-3.5M3 13h10" />');
 export const iconUpload = glyph('<path d="M8 11V3M4.5 6.5L8 3l3.5 3.5M3 13h10" />');
+export const iconPencil = glyph('<path d="M11.5 2.5l2 2L4.5 13.5H2.5v-2L11.5 2.5z" />');

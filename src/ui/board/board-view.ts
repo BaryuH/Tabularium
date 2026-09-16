@@ -7,11 +7,12 @@
  * store changes (never on keystrokes), the edit <input> keeps focus while the
  * user types.
  */
-import { iconPlus, iconTrash, iconX, iconTask, iconTaskDone, iconNote } from '../icons';
-import { escapeHtml, hostOf } from '../../util';
+import { iconPlus, iconTrash, iconX, iconTask, iconTaskDone, iconNote, iconPencil } from '../icons';
+import { escapeHtml } from '../../util';
 import type { Board, Card, CardKind, Column } from '../../types';
 import type { Store } from '../../state/store';
 import type { NotePanel } from '../note/note-panel';
+import type { CardEditModal } from '../card/card-edit-modal';
 
 const BOARD_ICONS = ['📁', '🏛️', '💼', '🚀', '🎯', '📚', '💡', '🛠️', '🎨', '🔬', '⚡', '🌟', '📌', '☕', '🧠', '🌿'] as const;
 
@@ -27,6 +28,7 @@ type Editing =
 export interface BoardViewOptions {
   onCardClick?: (url: string) => void;
   notePanel?: NotePanel;
+  cardEditModal?: CardEditModal;
 }
 
 export interface BoardView {
@@ -54,9 +56,6 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         : `<span class="card__fav card__fav--placeholder"></span>`;
     }
     const label = card.title.trim() || card.url || '(untitled)';
-    const hostLine = kind === 'tab' && card.url
-      ? `<span class="card__host">${escapeHtml(hostOf(card.url))}</span>`
-      : '';
     const noteSnippet = (kind === 'note' || kind === 'task') && card.note?.trim()
       ? `<span class="card__snippet">${escapeHtml(card.note.slice(0, 90))}${card.note.length > 90 ? '…' : ''}</span>`
       : '';
@@ -65,10 +64,12 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       ${indicator}
       <span class="card__body">
         <span class="card__title">${escapeHtml(label)}</span>
-        ${hostLine}
         ${noteSnippet}
       </span>
-      <button class="icon-btn icon-btn--sm card__del" data-action="delete-card" data-id="${card.id}" title="Remove">${iconX}</button>
+      <span class="card__actions">
+        <button class="icon-btn icon-btn--sm card__action-btn card__edit" data-action="edit-card" data-id="${card.id}" title="Edit title or link">${iconPencil}</button>
+        <button class="icon-btn icon-btn--sm card__action-btn card__del" data-action="delete-card" data-id="${card.id}" title="Remove">${iconX}</button>
+      </span>
     </article>`;
   };
 
@@ -279,6 +280,9 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         break;
       case 'delete-card':
         if (id) void store.deleteCard(id);
+        break;
+      case 'edit-card':
+        if (id) opts?.cardEditModal?.open(id);
         break;
       case 'add-task':
         if (id) {
