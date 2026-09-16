@@ -80,9 +80,10 @@ temp/
 .claude/
 skills-lock.json
 
-# ── Markdown: hide every .md except operational + spec/plan docs ─
+# ── Documentation & agents (hidden from git) ───────────────────
+docs/
+AGENTS.md
+
+# ── Markdown: hide every .md except README ───────────────────────
 *.md
 !README.md
-!AGENTS.md
-!docs/superpowers/specs/*.md
-!docs/superpowers/plans/*.md
