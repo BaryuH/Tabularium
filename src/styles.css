@@ -818,6 +818,56 @@ body {
   outline-offset: -2px;
 }
 
+.column--drop-target .column__empty {
+  display: none;
+}
+
+/* Smooth displacement placeholder ("nhường chỗ") */
+.card-placeholder {
+  min-height: var(--ph-height, 44px);
+  height: var(--ph-height, 44px);
+  box-sizing: border-box;
+  background: var(--surface-2);
+  border: 1.5px dashed var(--accent);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  opacity: 0.85;
+  animation: placeholder-expand 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: height 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+    min-height 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.16s ease;
+}
+
+@keyframes placeholder-expand {
+  from {
+    height: 0;
+    min-height: 0;
+    opacity: 0;
+    transform: scaleY(0.7);
+  }
+  to {
+    height: var(--ph-height, 44px);
+    min-height: var(--ph-height, 44px);
+    opacity: 0.85;
+    transform: scaleY(1);
+  }
+}
+
+/* Dragged card collapses smoothly out of flow while drag ghost is active */
+.card.card--dragging {
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  border-width: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
 .card--drop-before {
   box-shadow: 0 -2px 0 0 var(--accent);
 }
@@ -825,6 +875,7 @@ body {
 .card--drop-after {
   box-shadow: 0 2px 0 0 var(--accent);
 }
+
 .column--dragging {
   opacity: 0.35;
   will-change: transform, opacity;
@@ -833,6 +884,13 @@ body {
 .stab--dragging {
   opacity: 0.35;
   will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-placeholder {
+    animation: none;
+    transition: none;
+  }
 }
 
 [draggable="true"] {

@@ -17,17 +17,55 @@ const MIME_CARD = 'application/x-tabularium-card';
 const MIME_COLUMN = 'application/x-tabularium-column';
 
 // ── Indicator management ────────────────────────────────────────────────
-const INDICATOR_CLASSES = ['column--drop-target', 'card--drop-before', 'card--drop-after', 'column--dragging', 'stab--dragging'] as const;
+const INDICATOR_CLASSES = [
+  'column--drop-target',
+  'card--drop-before',
+  'card--drop-after',
+  'column--dragging',
+  'card--dragging',
+  'stab--dragging',
+] as const;
+
+let activePlaceholder: HTMLElement | null = null;
+
+function getOrCreatePlaceholder(height = 44): HTMLElement {
+  if (!activePlaceholder) {
+    activePlaceholder = document.createElement('div');
+    activePlaceholder.className = 'card-placeholder';
+  }
+  activePlaceholder.style.setProperty('--ph-height', `${height}px`);
+  return activePlaceholder;
+}
+
+function removePlaceholder(): void {
+  if (activePlaceholder) {
+    activePlaceholder.remove();
+    activePlaceholder = null;
+  }
+}
+
+function updatePlaceholder(container: HTMLElement, idx: number, height = 44): void {
+  const ph = getOrCreatePlaceholder(height);
+  const visibleCards = container.querySelectorAll<HTMLElement>('.card:not(.card--dragging)');
+  const refNode = visibleCards[idx] ?? null;
+
+  if (ph.parentElement === container && ph.nextElementSibling === refNode) {
+    return;
+  }
+
+  container.insertBefore(ph, refNode);
+}
 
 function clearIndicators(root: HTMLElement): void {
   for (const cls of INDICATOR_CLASSES) {
     for (const el of root.querySelectorAll(`.${cls}`)) el.classList.remove(cls);
   }
+  removePlaceholder();
 }
 
 // ── Position helpers ────────────────────────────────────────────────────
 function cardInsertIndex(container: HTMLElement, y: number): number {
-  const cards = container.querySelectorAll<HTMLElement>('.card:not(.column--dragging)');
+  const cards = container.querySelectorAll<HTMLElement>('.card:not(.card--dragging):not(.column--dragging)');
   for (let i = 0; i < cards.length; i++) {
     const rect = cards[i].getBoundingClientRect();
     if (y < rect.top + rect.height / 2) return i;
@@ -75,15 +113,17 @@ export function setupDnD(root: HTMLElement, store: Store): void {
     const card = target.closest<HTMLElement>('.card');
     if (card && card.dataset.id) {
       const colId = columnIdOf(card);
+      const height = card.offsetHeight || 44;
+      getOrCreatePlaceholder(height);
       e.dataTransfer!.setData(MIME_CARD, JSON.stringify({
         cardId: card.dataset.id,
         fromColumnId: colId ?? '',
+        height,
       }));
       e.dataTransfer!.effectAllowed = 'move';
-      requestAnimationFrame(() => card.classList.add('column--dragging'));
+      requestAnimationFrame(() => card.classList.add('card--dragging'));
       return;
     }
-
     // Column header
     const head = target.closest<HTMLElement>('.column__head');
     if (head) {
@@ -105,10 +145,18 @@ export function setupDnD(root: HTMLElement, store: Store): void {
     // Tab → column
     if (types.includes(MIME_TAB)) {
       const column = (e.target as HTMLElement).closest<HTMLElement>('.column:not(.column--add)');
-      if (column) {
-        e.preventDefault();
-        e.dataTransfer!.dropEffect = 'copy';
-        column.classList.add('column--drop-target');
+      if (!column) {
+        removePlaceholder();
+        return;
+      }
+      e.preventDefault();
+      e.dataTransfer!.dropEffect = 'copy';
+      column.classList.add('column--drop-target');
+
+      const cardsContainer = column.querySelector<HTMLElement>('.column__cards');
+      if (cardsContainer) {
+        const idx = cardInsertIndex(cardsContainer, e.clientY);
+        updatePlaceholder(cardsContainer, idx, 44);
       }
       return;
     }
@@ -116,7 +164,10 @@ export function setupDnD(root: HTMLElement, store: Store): void {
     // Card reorder / cross-column move
     if (types.includes(MIME_CARD)) {
       const column = (e.target as HTMLElement).closest<HTMLElement>('.column:not(.column--add)');
-      if (!column) return;
+      if (!column) {
+        removePlaceholder();
+        return;
+      }
       e.preventDefault();
       e.dataTransfer!.dropEffect = 'move';
       column.classList.add('column--drop-target');
@@ -124,15 +175,12 @@ export function setupDnD(root: HTMLElement, store: Store): void {
       const cardsContainer = column.querySelector<HTMLElement>('.column__cards');
       if (!cardsContainer) return;
       const idx = cardInsertIndex(cardsContainer, e.clientY);
-      const cards = cardsContainer.querySelectorAll<HTMLElement>('.card');
-      if (cards[idx]) {
-        cards[idx].classList.add('card--drop-before');
-      } else if (cards.length > 0) {
-        cards[cards.length - 1].classList.add('card--drop-after');
-      }
+      const phHeight = activePlaceholder
+        ? parseFloat(activePlaceholder.style.getPropertyValue('--ph-height')) || 44
+        : 44;
+      updatePlaceholder(cardsContainer, idx, phHeight);
       return;
     }
-
     // Column reorder
     if (types.includes(MIME_COLUMN)) {
       const columnsContainer = (e.target as HTMLElement).closest<HTMLElement>('.columns');
@@ -157,8 +205,23 @@ export function setupDnD(root: HTMLElement, store: Store): void {
       const column = (e.target as HTMLElement).closest<HTMLElement>('.column:not(.column--add)');
       const colId = column?.dataset.columnId;
       if (colId) {
+        const cardsContainer = column.querySelector<HTMLElement>('.column__cards');
+        const idx = cardsContainer ? cardInsertIndex(cardsContainer, e.clientY) : -1;
+        clearIndicators(root);
         const { url, title, favIconUrl } = JSON.parse(tabData) as { url: string; title: string; favIconUrl: string };
-        void store.createCard(colId, { url, title, favIconUrl: favIconUrl || undefined });
+        void (async () => {
+          const newCard = await store.createCard(colId, { url, title, favIconUrl: favIconUrl || undefined });
+          if (idx >= 0 && cardsContainer) {
+            const current = store.cardsOfColumn(colId);
+            if (idx < current.length - 1) {
+              const ids = current.map((c) => c.id).filter((id) => id !== newCard.id);
+              ids.splice(idx, 0, newCard.id);
+              await store.reorderCards(colId, ids);
+            }
+          }
+        })();
+      } else {
+        clearIndicators(root);
       }
       return;
     }
@@ -169,11 +232,18 @@ export function setupDnD(root: HTMLElement, store: Store): void {
       const { cardId, fromColumnId } = JSON.parse(cardData) as { cardId: string; fromColumnId: string };
       const column = (e.target as HTMLElement).closest<HTMLElement>('.column:not(.column--add)');
       const toColId = column?.dataset.columnId;
-      if (!toColId || !column) return;
+      if (!toColId || !column) {
+        clearIndicators(root);
+        return;
+      }
       const cardsContainer = column.querySelector<HTMLElement>('.column__cards');
-      if (!cardsContainer) return;
+      if (!cardsContainer) {
+        clearIndicators(root);
+        return;
+      }
 
       const idx = cardInsertIndex(cardsContainer, e.clientY);
+      clearIndicators(root);
       const currentIds = cardIdsInColumn(cardsContainer).filter((id) => id !== cardId);
       currentIds.splice(idx, 0, cardId);
 
