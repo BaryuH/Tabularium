@@ -175,6 +175,14 @@ export function createNotePanel(store: Store): NotePanel {
       titleInput.addEventListener('blur', flushSave);
       textarea.addEventListener('blur', flushSave);
 
+      titleInput.addEventListener('keydown', (event: KeyboardEvent) => {
+        if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.metaKey) {
+          event.preventDefault();
+          textarea.focus();
+          textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        }
+      });
+
       // Focus title if empty, else focus body
       requestAnimationFrame(() => {
         if (!titleInput.value.trim()) {

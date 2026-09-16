@@ -58,15 +58,11 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         : `<span class="card__fav card__fav--placeholder"></span>`;
     }
     const label = card.title.trim() || card.url || '(untitled)';
-    const noteSnippet = (kind === 'note' || kind === 'task') && card.note?.trim()
-      ? `<span class="card__snippet">${escapeHtml(card.note.slice(0, 90))}${card.note.length > 90 ? '…' : ''}</span>`
-      : '';
     const doneCls = isDone ? ' card--done' : '';
     return `<article class="card card--${kind}${doneCls}" draggable="true" tabindex="0" role="${kind === 'task' ? 'checkbox' : 'link'}" ${kind === 'task' ? `aria-checked="${isDone}"` : ''} data-id="${card.id}">
       ${indicator}
       <span class="card__body">
         <span class="card__title">${escapeHtml(label)}</span>
-        ${noteSnippet}
       </span>
       <span class="card__actions">
         <button class="icon-btn icon-btn--sm card__action-btn card__edit" data-action="edit-card" data-id="${card.id}" title="Edit title or link">${iconPencil}</button>
