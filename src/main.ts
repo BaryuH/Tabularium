@@ -94,11 +94,19 @@ async function bootstrap(): Promise<void> {
 
   // Sidebar
   const sidebarRoot = app.querySelector<HTMLElement>('#sidebar-root');
-  if (sidebarRoot) createSidebarView(tabAdapter).mount(sidebarRoot);
+  if (sidebarRoot) createSidebarView(tabAdapter, store).mount(sidebarRoot);
 
-  // Drag-and-drop (delegated on .layout, spans sidebar + board)
+  // Drag-and-drop & layout collapse state
   const layout = app.querySelector<HTMLElement>('.layout');
-  if (layout) setupDnD(layout, store);
+  if (layout) {
+    setupDnD(layout, store);
+    const updateLayout = (): void => {
+      const collapsed = Boolean(store.getState().meta.sidebarCollapsed);
+      layout.classList.toggle('layout--sidebar-collapsed', collapsed);
+    };
+    updateLayout();
+    store.subscribe(updateLayout);
+  }
 
   // Theme toggle
   const toggle = app.querySelector<HTMLButtonElement>('#theme-toggle');

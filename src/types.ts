@@ -42,6 +42,7 @@ export interface Meta {
   theme: ThemePref;
   schemaVersion: number;
   openBehavior?: TabOpenBehavior;
+  sidebarCollapsed?: boolean;
 }
 
 /** Full persisted graph, used to hydrate the in-memory store. */

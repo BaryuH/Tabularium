@@ -100,3 +100,10 @@ describe('openUrl', () => {
     expect(api.create).toHaveBeenCalledWith({ url: 'https://new.com' });
   });
 });
+
+describe('openInCurrentTab', () => {
+  it('updates the currently active tab with the given url', async () => {
+    await adapter.openInCurrentTab('https://update-current.com');
+    expect(api.update).toHaveBeenCalledWith(1, { url: 'https://update-current.com' });
+  });
+});

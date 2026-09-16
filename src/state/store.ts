@@ -54,6 +54,7 @@ export interface Store {
 
   setTheme(theme: ThemePref): Promise<void>;
   setOpenBehavior(behavior: TabOpenBehavior): Promise<void>;
+  setSidebarCollapsed(collapsed: boolean): Promise<void>;
   exportSnapshot(): Promise<Snapshot>;
   importSnapshot(snapshot: Snapshot): Promise<void>;
 }
@@ -212,6 +213,10 @@ export function createStore(repo: Repo): Store {
       await refresh();
     },
 
+    async setSidebarCollapsed(collapsed) {
+      await repo.setMeta({ sidebarCollapsed: collapsed });
+      await refresh();
+    },
     exportSnapshot: () => repo.getSnapshot(),
 
     async importSnapshot(snapshot) {
