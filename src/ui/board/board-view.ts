@@ -57,7 +57,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     const hostLine = kind === 'tab' && card.url
       ? `<span class="card__host">${escapeHtml(hostOf(card.url))}</span>`
       : '';
-    const noteSnippet = kind === 'note' && card.note?.trim()
+    const noteSnippet = (kind === 'note' || kind === 'task') && card.note?.trim()
       ? `<span class="card__snippet">${escapeHtml(card.note.slice(0, 90))}${card.note.length > 90 ? '…' : ''}</span>`
       : '';
     const doneCls = isDone ? ' card--done' : '';
@@ -244,11 +244,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     if (card?.dataset.id) {
       const cardData = store.getState().cards[card.dataset.id];
       if (cardData) {
-        if (cardData.kind === 'task') {
-          void store.toggleTaskComplete(card.dataset.id);
-          return;
-        }
-        if (cardData.kind === 'note') {
+        if (cardData.kind === 'task' || cardData.kind === 'note') {
           opts?.notePanel?.open(card.dataset.id);
           return;
         }
@@ -285,7 +281,15 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         if (id) void store.deleteCard(id);
         break;
       case 'add-task':
-        if (id) setEditing({ kind: 'new-task', columnId: id });
+        if (id) {
+          if (opts?.notePanel) {
+            void store.createCard(id, { url: '', title: '', kind: 'task' }).then((c) => {
+              opts.notePanel?.open(c.id);
+            });
+          } else {
+            setEditing({ kind: 'new-task', columnId: id });
+          }
+        }
         break;
       case 'add-note':
         if (id) {
@@ -331,24 +335,25 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       return;
     }
     // Card keyboard activation (a11y: Enter or Space for task)
-    if ((event.key === 'Enter' || event.key === ' ') && target.closest('.card') && !target.closest('[data-action]')) {
+    if (event.key === ' ' && target.closest('.card--task') && !target.closest('[data-action]')) {
+      const card = target.closest<HTMLElement>('.card');
+      if (card?.dataset.id) {
+        event.preventDefault();
+        void store.toggleTaskComplete(card.dataset.id);
+        return;
+      }
+    }
+    if (event.key === 'Enter' && target.closest('.card') && !target.closest('[data-action]')) {
       const card = target.closest<HTMLElement>('.card');
       if (card?.dataset.id) {
         const cardData = store.getState().cards[card.dataset.id];
         if (cardData) {
-          if (cardData.kind === 'task') {
-            event.preventDefault();
-            void store.toggleTaskComplete(card.dataset.id);
-            return;
-          }
-          if (cardData.kind === 'note') {
+          if (cardData.kind === 'task' || cardData.kind === 'note') {
             event.preventDefault();
             opts?.notePanel?.open(card.dataset.id);
             return;
           }
-          if (event.key === 'Enter' && opts?.onCardClick) {
-            opts.onCardClick(cardData.url);
-          }
+          if (opts?.onCardClick) opts.onCardClick(cardData.url);
         }
       }
     }
