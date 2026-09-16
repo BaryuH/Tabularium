@@ -7,7 +7,7 @@
  * store changes (never on keystrokes), the edit <input> keeps focus while the
  * user types.
  */
-import { iconPlus, iconTrash, iconX, iconTask, iconTaskDone, iconNote, iconPencil } from '../icons';
+import { iconPlus, iconTrash, iconX, iconTask, iconTaskDone, iconListTodo, iconNote, iconPencil } from '../icons';
 import { escapeHtml } from '../../util';
 import type { Board, Card, CardKind, Column } from '../../types';
 import type { Store } from '../../state/store';
@@ -79,7 +79,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       return `<div class="column__add-row">${inputHtml('', 'Note')}</div>`;
     }
     return `<div class="column__add-row">
-      <button class="column__add-btn" data-action="add-task" data-id="${columnId}" title="Add task">${iconTask}<span>Task</span></button>
+      <button class="column__add-btn" data-action="add-task" data-id="${columnId}" title="Add task">${iconListTodo}<span>Task</span></button>
       <button class="column__add-btn" data-action="add-note" data-id="${columnId}" title="Add note">${iconNote}<span>Note</span></button>
     </div>`;
   };

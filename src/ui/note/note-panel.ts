@@ -8,7 +8,7 @@
  * - Escape or click-outside to close
  * - Live character and word counts
  */
-import { iconX, iconTask, iconTaskDone } from '../icons';
+import { iconX, iconTask, iconTaskDone, iconListTodo, iconNote } from '../icons';
 import { escapeHtml } from '../../util';
 import type { Store } from '../../state/store';
 
@@ -94,7 +94,8 @@ export function createNotePanel(store: Store): NotePanel {
     const isTask = kind === 'task';
     const isDone = Boolean(card?.completedAt);
     const badgeLabel = isTask ? 'Task' : 'Note';
-    const badgeClass = isTask ? 'note-panel__badge note-panel__badge--task' : 'note-panel__badge';
+    const badgeIcon = isTask ? iconListTodo : iconNote;
+    const badgeClass = isTask ? 'note-panel__badge note-panel__badge--task' : 'note-panel__badge note-panel__badge--note';
     const titlePlaceholder = isTask ? 'Task title...' : 'Note title...';
     const textareaPlaceholder = isTask ? 'Add task details, steps, or description...' : 'Write your note here...';
 
@@ -118,7 +119,7 @@ export function createNotePanel(store: Store): NotePanel {
       <aside class="note-panel" role="dialog" aria-modal="true" aria-label="${badgeLabel} Editor">
         <header class="note-panel__head">
           <div class="note-panel__meta">
-            <span class="${badgeClass}">${badgeLabel}</span>
+            <span class="${badgeClass}">${badgeIcon}<span>${badgeLabel}</span></span>
             ${taskToggleBtn}
             <span class="note-panel__date">${escapeHtml(dateStr)}</span>
             <span class="note-panel__counts">0 words · 0 chars</span>

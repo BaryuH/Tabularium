@@ -6,16 +6,17 @@
  * Tree-shaken by Vite so only the imported icons are bundled.
  */
 import {
-  CheckCircle2,
-  Circle,
+  CheckSquare,
   Download,
-  FileText,
+  ListTodo,
   Moon,
   PanelLeft,
   PanelLeftClose,
   Pencil,
   Plus,
   Settings,
+  Square,
+  StickyNote,
   Sun,
   Trash2,
   Upload,
@@ -38,9 +39,10 @@ function renderSvg(icon: IconNode, size = 16, strokeWidth = 1.75): string {
 export const iconPlus = renderSvg(Plus);
 export const iconX = renderSvg(X);
 export const iconTrash = renderSvg(Trash2);
-export const iconTask = renderSvg(Circle);
-export const iconTaskDone = renderSvg(CheckCircle2);
-export const iconNote = renderSvg(FileText);
+export const iconTask = renderSvg(Square);
+export const iconTaskDone = renderSvg(CheckSquare);
+export const iconListTodo = renderSvg(ListTodo);
+export const iconNote = renderSvg(StickyNote);
 export const iconGear = renderSvg(Settings);
 export const iconDownload = renderSvg(Download);
 export const iconUpload = renderSvg(Upload);
