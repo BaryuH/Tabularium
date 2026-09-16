@@ -47,6 +47,20 @@ it('notifies subscribers on mutation and stops after unsubscribe', async () => {
   expect(calls).toBe(settled);
 });
 
+it('createColumn with icon and setColumnIcon updates column icon', async () => {
+  const boardId = store.boardsSorted()[0].id;
+  const col = await store.createColumn(boardId, 'Doing', '⚡');
+  expect(col.icon).toBe('⚡');
+  expect(store.columnsOfBoard(boardId).find((c) => c.id === col.id)?.icon).toBe('⚡');
+
+  await store.setColumnIcon(col.id, '🔥');
+  expect(store.columnsOfBoard(boardId).find((c) => c.id === col.id)?.icon).toBe('🔥');
+
+  // Remove icon
+  await store.setColumnIcon(col.id, undefined);
+  expect(store.columnsOfBoard(boardId).find((c) => c.id === col.id)?.icon).toBeUndefined();
+});
+
 it('createCard and reorderCards yield ordered cards', async () => {
   const inbox = store.columnsOfBoard(store.boardsSorted()[0].id)[0];
   const a = await store.createCard(inbox.id, { url: 'a', title: 'a' });

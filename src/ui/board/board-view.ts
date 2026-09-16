@@ -15,6 +15,7 @@ import type { NotePanel } from '../note/note-panel';
 import type { CardEditModal } from '../card/card-edit-modal';
 
 const BOARD_ICONS = ['📁', '🏛️', '💼', '🚀', '🎯', '📚', '💡', '🛠️', '🎨', '🔬', '⚡', '🌟', '📌', '☕', '🧠', '🌿'] as const;
+const COLUMN_ICONS = ['📥', '🚀', '🔬', '✅', '⚡', '📋', '📌', '💡', '📚', '🎯', '🌿', '☕', '🔥', '🛠️', '⭐', '📦'] as const;
 
 type Editing =
   | { kind: 'new-board' }
@@ -23,7 +24,8 @@ type Editing =
   | { kind: 'rename-column'; id: string }
   | { kind: 'new-task'; columnId: string }
   | { kind: 'new-note'; columnId: string }
-  | { kind: 'pick-icon'; boardId: string };
+  | { kind: 'pick-icon'; boardId: string }
+  | { kind: 'pick-column-icon'; columnId: string };
 
 export interface BoardViewOptions {
   onCardClick?: (url: string) => void;
@@ -86,8 +88,19 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     </div>`;
   };
 
+  const columnIconPickerHtml = (columnId: string): string => {
+    const items = COLUMN_ICONS.map(
+      (ico) => `<button class="icon-picker__item" data-action="select-column-icon" data-column-id="${columnId}" data-icon="${ico}" title="${ico}">${ico}</button>`,
+    ).join('');
+    return `<div class="icon-picker icon-picker--column" role="dialog" aria-label="Choose column icon">
+      <div class="icon-picker__grid">${items}</div>
+      <button class="icon-picker__clear" data-action="select-column-icon" data-column-id="${columnId}" data-icon="">Remove icon</button>
+    </div>`;
+  };
+
   const columnHtml = (column: Column): string => {
     const cards = store.cardsOfColumn(column.id);
+    const iconBtn = `<button class="column__icon-btn" data-action="pick-column-icon" data-id="${column.id}" title="Change column icon">${column.icon ? escapeHtml(column.icon) : '📋'}</button>`;
     const name =
       editing?.kind === 'rename-column' && editing.id === column.id
         ? inputHtml(column.name, 'Column name')
@@ -95,12 +108,18 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     const body = cards.length
       ? cards.map(cardHtml).join('')
       : `<p class="column__empty">Drop tabs here, or add a task / note below.</p>`;
+    const picker =
+      editing?.kind === 'pick-column-icon' && editing.columnId === column.id
+        ? columnIconPickerHtml(column.id)
+        : '';
     return `<section class="column" data-column-id="${column.id}">
       <header class="column__head" draggable="true">
+        ${iconBtn}
         ${name}
         <span class="column__count">${cards.length}</span>
         <button class="icon-btn icon-btn--sm column__del" data-action="delete-column" data-id="${column.id}" title="Delete column">${iconTrash}</button>
       </header>
+      ${picker}
       <div class="column__cards">${body}</div>
       ${columnFooterHtml(column.id)}
     </section>`;
@@ -184,7 +203,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         break;
       case 'new-column': {
         const active = store.activeBoard();
-        if (active) await store.createColumn(active.id, name);
+        if (active) await store.createColumn(active.id, name, '📋');
         break;
       }
       case 'rename-column':
@@ -238,6 +257,9 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     if (actionEl && root?.contains(actionEl)) {
       handleAction(actionEl);
       return;
+    }
+    if (editing?.kind === 'pick-column-icon' && !target.closest('.icon-picker') && !target.closest('[data-action="pick-column-icon"]')) {
+      setEditing(null);
     }
     // Card body click (no data-action ancestor)
     const card = (event.target as HTMLElement).closest<HTMLElement>('.card');
@@ -322,6 +344,24 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         const icon = el.dataset.icon || undefined;
         if (boardId) {
           void store.setBoardIcon(boardId, icon);
+          setEditing(null);
+        }
+        break;
+      }
+      case 'pick-column-icon':
+        if (id) {
+          if (editing?.kind === 'pick-column-icon' && editing.columnId === id) {
+            setEditing(null);
+          } else {
+            setEditing({ kind: 'pick-column-icon', columnId: id });
+          }
+        }
+        break;
+      case 'select-column-icon': {
+        const columnId = el.dataset.columnId;
+        const icon = el.dataset.icon || undefined;
+        if (columnId) {
+          void store.setColumnIcon(columnId, icon);
           setEditing(null);
         }
         break;
