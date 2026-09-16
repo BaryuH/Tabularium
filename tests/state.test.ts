@@ -13,12 +13,12 @@ beforeEach(async () => {
   await store.hydrate();
 });
 
-it('hydrate seeds and loads default boards with Inbox columns', () => {
+it('hydrate seeds and loads default board My Workspace with 3 columns', () => {
   const boards = store.boardsSorted();
-  expect(boards).toHaveLength(3);
-  expect(boards.map((b) => b.name)).toEqual(['General', 'Projects', 'Reading List']);
-  expect(boards.map((b) => b.icon)).toEqual(['🏛️', '🚀', '📚']);
-  expect(store.columnsOfBoard(boards[0].id).map((c) => c.name)).toContain('Inbox');
+  expect(boards).toHaveLength(1);
+  expect(boards[0].name).toBe('My Workspace');
+  expect(boards[0].icon).toBe('💼');
+  expect(store.columnsOfBoard(boards[0].id).map((c) => c.name)).toEqual(['General', 'Projects', 'Research']);
   expect(store.activeBoard()?.id).toBe(boards[0].id);
 });
 
