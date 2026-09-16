@@ -33,8 +33,9 @@ export interface Store {
   cardsOfColumn(columnId: string): Card[];
   activeBoard(): Board | undefined;
 
-  createBoard(name: string): Promise<Board>;
+  createBoard(name: string, icon?: string): Promise<Board>;
   renameBoard(id: string, name: string): Promise<void>;
+  setBoardIcon(id: string, icon?: string): Promise<void>;
   deleteBoard(id: string): Promise<void>;
   setActiveBoard(id: string): Promise<void>;
   reorderBoards(orderedIds: string[]): Promise<void>;
@@ -112,10 +113,15 @@ export function createStore(repo: Repo): Store {
       return id ? state.boards[id] : undefined;
     },
 
-    async createBoard(name) {
-      const board = await repo.createBoard(name);
+    async createBoard(name, icon) {
+      const board = await repo.createBoard(name, icon);
       await refresh();
       return board;
+    },
+
+    async setBoardIcon(id, icon) {
+      await repo.setBoardIcon(id, icon);
+      await refresh();
     },
 
     async renameBoard(id, name) {

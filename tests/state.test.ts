@@ -97,6 +97,19 @@ it('deleteBoard removes it from state', async () => {
   expect(store.boardsSorted().some((b) => b.id === second.id)).toBe(false);
 });
 
+it('createBoard with icon and setBoardIcon update board icon', async () => {
+  const board = await store.createBoard('Project X', '🚀');
+  expect(board.icon).toBe('🚀');
+  expect(store.boardsSorted().find((b) => b.id === board.id)?.icon).toBe('🚀');
+
+  await store.setBoardIcon(board.id, '🎯');
+  expect(store.boardsSorted().find((b) => b.id === board.id)?.icon).toBe('🎯');
+
+  // Remove icon
+  await store.setBoardIcon(board.id, undefined);
+  expect(store.boardsSorted().find((b) => b.id === board.id)?.icon).toBeUndefined();
+});
+
 it('applyExternalChange re-reads writes made directly against the repo', async () => {
   const inbox = store.columnsOfBoard(store.boardsSorted()[0].id)[0];
   await repo.createCard(inbox.id, { url: 'ext', title: 'ext' }); // bypasses the store

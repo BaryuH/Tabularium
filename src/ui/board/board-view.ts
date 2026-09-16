@@ -12,13 +12,16 @@ import { escapeHtml, hostOf } from '../../util';
 import type { Board, Card, CardKind, Column } from '../../types';
 import type { Store } from '../../state/store';
 
+const BOARD_ICONS = ['📁', '🏛️', '💼', '🚀', '🎯', '📚', '💡', '🛠️', '🎨', '🔬', '⚡', '🌟', '📌', '☕', '🧠', '🌿'] as const;
+
 type Editing =
   | { kind: 'new-board' }
   | { kind: 'rename-board'; id: string }
   | { kind: 'new-column' }
   | { kind: 'rename-column'; id: string }
   | { kind: 'new-task'; columnId: string }
-  | { kind: 'new-note'; columnId: string };
+  | { kind: 'new-note'; columnId: string }
+  | { kind: 'pick-icon'; boardId: string };
 
 export interface BoardViewOptions {
   onCardClick?: (url: string) => void;
@@ -96,24 +99,37 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     </section>`;
   };
 
+  const iconPickerHtml = (boardId: string): string => {
+    const items = BOARD_ICONS.map(
+      (ico) => `<button class="icon-picker__item" data-action="select-icon" data-board-id="${boardId}" data-icon="${ico}" title="${ico}">${ico}</button>`,
+    ).join('');
+    return `<div class="icon-picker" role="dialog" aria-label="Choose board icon">
+      <div class="icon-picker__grid">${items}</div>
+      <button class="icon-picker__clear" data-action="select-icon" data-board-id="${boardId}" data-icon="">Remove icon</button>
+    </div>`;
+  };
+
   const switcherHtml = (boards: Board[], active: Board | undefined): string => {
     const pills = boards
       .map((board) => {
+        const iconSpan = board.icon ? `<span class="board-pill__icon">${escapeHtml(board.icon)}</span>` : '';
         if (active && board.id === active.id) {
           const name =
             editing?.kind === 'rename-board' && editing.id === board.id
               ? inputHtml(board.name, 'Board name')
               : `<button class="board-pill__name" data-action="rename-board" data-id="${board.id}" title="Rename board">${escapeHtml(board.name)}</button>`;
-          return `<div class="board-pill board-pill--active">${name}<button class="icon-btn icon-btn--sm" data-action="delete-board" data-id="${board.id}" title="Delete board">${iconTrash}</button></div>`;
+          const iconBtn = `<button class="board-pill__icon-btn" data-action="pick-icon" data-id="${board.id}" title="Change icon">${board.icon ? escapeHtml(board.icon) : '+'}</button>`;
+          return `<div class="board-pill board-pill--active">${iconBtn}${name}<button class="icon-btn icon-btn--sm" data-action="delete-board" data-id="${board.id}" title="Delete board">${iconTrash}</button></div>`;
         }
-        return `<button class="board-pill" data-action="switch-board" data-id="${board.id}">${escapeHtml(board.name)}</button>`;
+        return `<button class="board-pill" data-action="switch-board" data-id="${board.id}">${iconSpan}<span>${escapeHtml(board.name)}</span></button>`;
       })
       .join('');
     const adder =
       editing?.kind === 'new-board'
         ? inputHtml('', 'Board name')
         : `<button class="icon-btn" data-action="add-board" title="New board">${iconPlus}</button>`;
-    return `<div class="switcher__boards">${pills}${adder}</div>`;
+    const picker = editing?.kind === 'pick-icon' ? iconPickerHtml(editing.boardId) : '';
+    return `<div class="switcher__boards">${pills}${adder}</div>${picker}`;
   };
 
   const columnsHtml = (active: Board): string => {
@@ -208,7 +224,11 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
   };
 
   const onClick = (event: MouseEvent): void => {
-    const actionEl = (event.target as HTMLElement).closest<HTMLElement>('[data-action]');
+    const target = event.target as HTMLElement;
+    if (editing?.kind === 'pick-icon' && !target.closest('.icon-picker') && !target.closest('[data-action="pick-icon"]')) {
+      setEditing(null);
+    }
+    const actionEl = target.closest<HTMLElement>('[data-action]');
     if (actionEl && root?.contains(actionEl)) {
       handleAction(actionEl);
       return;
@@ -263,6 +283,24 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       case 'toggle-task':
         if (id) void store.toggleTaskComplete(id);
         break;
+      case 'pick-icon':
+        if (id) {
+          if (editing?.kind === 'pick-icon' && editing.boardId === id) {
+            setEditing(null);
+          } else {
+            setEditing({ kind: 'pick-icon', boardId: id });
+          }
+        }
+        break;
+      case 'select-icon': {
+        const boardId = el.dataset.boardId;
+        const icon = el.dataset.icon || undefined;
+        if (boardId) {
+          void store.setBoardIcon(boardId, icon);
+          setEditing(null);
+        }
+        break;
+      }
     }
   };
 

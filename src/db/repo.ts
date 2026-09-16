@@ -19,8 +19,9 @@ export type CardPatch = Partial<Pick<Card, 'title' | 'url' | 'favIconUrl' | 'not
 export interface Repo {
   listBoards(): Promise<Board[]>;
   getBoard(id: string): Promise<Board | undefined>;
-  createBoard(name: string): Promise<Board>;
+  createBoard(name: string, icon?: string): Promise<Board>;
   renameBoard(id: string, name: string): Promise<Board>;
+  setBoardIcon(id: string, icon?: string): Promise<Board>;
   deleteBoard(id: string): Promise<void>;
   reorderBoards(orderedIds: string[]): Promise<void>;
   listColumns(boardId: string): Promise<Column[]>;
@@ -73,12 +74,13 @@ export function createRepo(db: IDBDatabase): Repo {
     return reqP<Board | undefined>(tx.objectStore(STORE.boards).get(id));
   };
 
-  const createBoard = async (name: string): Promise<Board> => {
+  const createBoard = async (name: string, icon?: string): Promise<Board> => {
     const boards = await listBoards();
     const now = Date.now();
     const board: Board = {
       id: crypto.randomUUID(),
       name,
+      icon,
       order: nextOrder(boards),
       createdAt: now,
       updatedAt: now,
@@ -101,6 +103,21 @@ export function createRepo(db: IDBDatabase): Repo {
     const board = await getBoard(id);
     if (!board) throw new Error(`Board not found: ${id}`);
     board.name = name;
+    board.updatedAt = Date.now();
+    const tx = db.transaction(STORE.boards, 'readwrite');
+    tx.objectStore(STORE.boards).put(board);
+    await txDone(tx);
+    return board;
+  };
+
+  const setBoardIcon = async (id: string, icon?: string): Promise<Board> => {
+    const board = await getBoard(id);
+    if (!board) throw new Error(`Board not found: ${id}`);
+    if (icon) {
+      board.icon = icon;
+    } else {
+      delete board.icon;
+    }
     board.updatedAt = Date.now();
     const tx = db.transaction(STORE.boards, 'readwrite');
     tx.objectStore(STORE.boards).put(board);
@@ -342,6 +359,7 @@ export function createRepo(db: IDBDatabase): Repo {
       const board: Board = {
         id: crypto.randomUUID(),
         name: 'My Board',
+        icon: '🏛️',
         order: ORDER_STEP,
         createdAt: now,
         updatedAt: now,
@@ -368,6 +386,7 @@ export function createRepo(db: IDBDatabase): Repo {
     getBoard,
     createBoard,
     renameBoard,
+    setBoardIcon,
     deleteBoard,
     reorderBoards,
     listColumns,

@@ -3,6 +3,7 @@
 export interface Board {
   id: string;
   name: string;
+  icon?: string;
   order: number;
   createdAt: number;
   updatedAt: number;
