@@ -9,7 +9,7 @@
  * - Live character and word counts
  */
 import { iconX, iconTask, iconTaskDone, iconListTodo, iconNote } from '../icons';
-import { escapeHtml } from '../../util';
+import { escapeHtml, formatDateTag, HAS_DATE_PREFIX } from '../../util';
 import type { Store } from '../../state/store';
 
 export interface NotePanel {
@@ -32,12 +32,12 @@ export function createNotePanel(store: Store): NotePanel {
     saveTimer = undefined;
 
     if (pendingNew) {
-      const rawTitle = (pendingTitle ?? '').trim();
+      const cleanTitle = (pendingTitle ?? '').replace(HAS_DATE_PREFIX, '').trim();
       const rawNote = (pendingNote ?? '').trim();
-      if (rawTitle || rawNote) {
+      if (cleanTitle || rawNote) {
         const cur = pendingNew;
         pendingNew = null;
-        const title = rawTitle || '(untitled)';
+        const title = (pendingTitle ?? '').trim() || '(untitled)';
         const note = pendingNote ?? '';
         pendingTitle = null;
         pendingNote = null;
@@ -105,8 +105,8 @@ export function createNotePanel(store: Store): NotePanel {
           <span>${isDone ? 'Completed' : 'Mark done'}</span>
         </button>`
       : '';
-
-    const title = card ? (card.title === '(untitled)' ? '' : card.title) : '';
+    const defaultTag = `${formatDateTag()} `;
+    const title = card ? (card.title === '(untitled)' ? '' : card.title) : defaultTag;
     const note = card?.note ?? '';
     const dateStr = new Date(card?.savedAt ?? Date.now()).toLocaleDateString(undefined, {
       month: 'short',
@@ -156,7 +156,8 @@ export function createNotePanel(store: Store): NotePanel {
         updateCounts(rawNote);
 
         if (pendingNew) {
-          if (rawTitle || rawNote.trim()) {
+          const cleanTitle = rawTitle.replace(HAS_DATE_PREFIX, '').trim();
+          if (cleanTitle || rawNote.trim()) {
             scheduleSave(rawTitle || '(untitled)', rawNote);
           } else {
             pendingTitle = null;
@@ -184,14 +185,10 @@ export function createNotePanel(store: Store): NotePanel {
         }
       });
 
-      // Focus title if empty, else focus body
+      // Focus title, placing cursor after default date tag
       requestAnimationFrame(() => {
-        if (!titleInput.value.trim()) {
-          titleInput.focus();
-        } else {
-          textarea.focus();
-          textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-        }
+        titleInput.focus();
+        titleInput.setSelectionRange(titleInput.value.length, titleInput.value.length);
       });
     }
   };
@@ -201,10 +198,10 @@ export function createNotePanel(store: Store): NotePanel {
     if (activeCardId) {
       const card = store.getState().cards[activeCardId];
       if (card) {
-        const title = card.title.trim();
+        const cleanTitle = card.title.replace(HAS_DATE_PREFIX, '').trim();
         const note = (card.note ?? '').trim();
         const url = (card.url ?? '').trim();
-        if ((!title || title === '(untitled)') && !note && !url) {
+        if ((!cleanTitle || cleanTitle === '(untitled)') && !note && !url) {
           void store.deleteCard(activeCardId);
         }
       }

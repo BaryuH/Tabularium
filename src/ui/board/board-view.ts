@@ -8,7 +8,7 @@
  * user types.
  */
 import { iconPlus, iconTrash, iconX, iconTask, iconTaskDone, iconListTodo, iconNote, iconPencil } from '../icons';
-import { escapeHtml } from '../../util';
+import { escapeHtml, formatDateTag, HAS_DATE_PREFIX } from '../../util';
 import type { Board, Card, CardKind, Column } from '../../types';
 import type { Store } from '../../state/store';
 import type { NotePanel } from '../note/note-panel';
@@ -57,12 +57,26 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         ? `<img class="card__fav" src="${escapeHtml(card.favIconUrl)}" alt="" width="16" height="16" />`
         : `<span class="card__fav card__fav--placeholder"></span>`;
     }
-    const label = card.title.trim() || card.url || '(untitled)';
+    const rawLabel = card.title.trim() || card.url || '(untitled)';
+    let titleHtml: string;
+    if (kind === 'task' || kind === 'note') {
+      const match = rawLabel.match(HAS_DATE_PREFIX);
+      if (match) {
+        const dateTag = match[0].trim();
+        const text = rawLabel.slice(match[0].length).trim();
+        titleHtml = `<span class="card__date">${escapeHtml(dateTag)}</span><span class="card__title-text">${escapeHtml(text || rawLabel)}</span>`;
+      } else {
+        const autoDate = formatDateTag(card.savedAt);
+        titleHtml = `<span class="card__date">${escapeHtml(autoDate)}</span><span class="card__title-text">${escapeHtml(rawLabel)}</span>`;
+      }
+    } else {
+      titleHtml = `<span class="card__title-text">${escapeHtml(rawLabel)}</span>`;
+    }
     const doneCls = isDone ? ' card--done' : '';
     return `<article class="card card--${kind}${doneCls}" draggable="true" tabindex="0" role="${kind === 'task' ? 'checkbox' : 'link'}" ${kind === 'task' ? `aria-checked="${isDone}"` : ''} data-id="${card.id}">
       ${indicator}
       <span class="card__body">
-        <span class="card__title">${escapeHtml(label)}</span>
+        <span class="card__title">${titleHtml}</span>
       </span>
       <span class="card__actions">
         <button class="icon-btn icon-btn--sm card__action-btn card__edit" data-action="edit-card" data-id="${card.id}" title="Edit title or link">${iconPencil}</button>

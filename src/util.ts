@@ -24,3 +24,14 @@ export function hostOf(url: string): string {
     return url;
   }
 }
+
+/** Regex matching a bracketed date prefix like [16/09], [16/09/2026], or [2026-09-16]. */
+export const HAS_DATE_PREFIX = /^\[\d{1,4}[/-]\d{1,2}([/-]\d{1,4})?\]\s*/;
+
+/** Format a timestamp into a compact `[DD/MM]` date tag. */
+export function formatDateTag(timestamp = Date.now()): string {
+  const d = new Date(timestamp);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `[${day}/${month}]`;
+}
