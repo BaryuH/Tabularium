@@ -194,15 +194,14 @@ body {
 .board-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: none;
   border: 1px solid transparent;
   color: var(--text-muted);
   font-size: 14px;
   font-weight: 500;
-  padding: 6px 12px;
+  padding: 3px 6px 3px 8px;
   border-radius: 8px;
-  cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
 
@@ -212,15 +211,20 @@ body {
 }
 
 .board-pill--active {
-  display: flex;
-  align-items: center;
-  gap: 4px;
   background: var(--surface);
   border-color: var(--border);
   color: var(--text);
-  padding: 3px 6px 3px 8px;
 }
 
+.board-pill__name-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 3px 2px;
+}
 .board-pill__icon {
   font-size: 14px;
   line-height: 1;

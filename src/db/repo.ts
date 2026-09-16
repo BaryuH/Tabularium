@@ -386,23 +386,41 @@ export function createRepo(db: IDBDatabase): Repo {
     countReq.onsuccess = () => {
       if (countReq.result > 0) return;
       const now = Date.now();
-      const board: Board = {
-        id: crypto.randomUUID(),
-        name: 'My Board',
-        icon: '🏛️',
-        order: ORDER_STEP,
-        createdAt: now,
-        updatedAt: now,
-      };
-      const inbox: Column = {
-        id: crypto.randomUUID(),
-        boardId: board.id,
-        name: 'Inbox',
-        order: ORDER_STEP,
-      };
-      const meta: Meta = { activeBoardId: board.id, theme: 'system', schemaVersion: DB_VERSION };
-      boardsStore.put(board);
-      tx.objectStore(STORE.columns).put(inbox);
+      const defaultBoards: Array<{ name: string; icon: string; columns: string[] }> = [
+        { name: 'General', icon: '🏛️', columns: ['Inbox', 'Doing', 'Done'] },
+        { name: 'Projects', icon: '🚀', columns: ['Inbox', 'Tasks', 'Archive'] },
+        { name: 'Reading List', icon: '📚', columns: ['Inbox', 'Articles', 'Completed'] },
+      ];
+
+      const columnsStore = tx.objectStore(STORE.columns);
+      let firstBoardId: string | null = null;
+
+      defaultBoards.forEach((spec, bIndex) => {
+        const boardId = crypto.randomUUID();
+        if (bIndex === 0) firstBoardId = boardId;
+
+        const board: Board = {
+          id: boardId,
+          name: spec.name,
+          icon: spec.icon,
+          order: (bIndex + 1) * ORDER_STEP,
+          createdAt: now,
+          updatedAt: now,
+        };
+        boardsStore.put(board);
+
+        spec.columns.forEach((colName, cIndex) => {
+          const col: Column = {
+            id: crypto.randomUUID(),
+            boardId,
+            name: colName,
+            order: (cIndex + 1) * ORDER_STEP,
+          };
+          columnsStore.put(col);
+        });
+      });
+
+      const meta: Meta = { activeBoardId: firstBoardId, theme: 'system', schemaVersion: DB_VERSION };
       tx.objectStore(STORE.meta).put(meta, META_KEY);
     };
     tx.oncomplete = () => resolve();

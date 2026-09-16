@@ -119,16 +119,15 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
   const switcherHtml = (boards: Board[], active: Board | undefined): string => {
     const pills = boards
       .map((board) => {
-        const iconSpan = board.icon ? `<span class="board-pill__icon">${escapeHtml(board.icon)}</span>` : '';
+        const iconBtn = `<button class="board-pill__icon-btn" data-action="pick-icon" data-id="${board.id}" title="Change icon">${board.icon ? escapeHtml(board.icon) : '📁'}</button>`;
         if (active && board.id === active.id) {
           const name =
             editing?.kind === 'rename-board' && editing.id === board.id
               ? inputHtml(board.name, 'Board name')
               : `<button class="board-pill__name" data-action="rename-board" data-id="${board.id}" title="Rename board">${escapeHtml(board.name)}</button>`;
-          const iconBtn = `<button class="board-pill__icon-btn" data-action="pick-icon" data-id="${board.id}" title="Change icon">${board.icon ? escapeHtml(board.icon) : '+'}</button>`;
           return `<div class="board-pill board-pill--active">${iconBtn}${name}<button class="icon-btn icon-btn--sm" data-action="delete-board" data-id="${board.id}" title="Delete board">${iconTrash}</button></div>`;
         }
-        return `<button class="board-pill" data-action="switch-board" data-id="${board.id}">${iconSpan}<span>${escapeHtml(board.name)}</span></button>`;
+        return `<div class="board-pill">${iconBtn}<button class="board-pill__name-btn" data-action="switch-board" data-id="${board.id}">${escapeHtml(board.name)}</button></div>`;
       })
       .join('');
     const adder =
@@ -176,7 +175,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
   const applyEdit = async (current: Editing, name: string): Promise<void> => {
     switch (current.kind) {
       case 'new-board': {
-        const board = await store.createBoard(name);
+        const board = await store.createBoard(name, '📁');
         await store.setActiveBoard(board.id);
         break;
       }

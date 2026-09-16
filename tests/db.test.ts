@@ -10,19 +10,21 @@ beforeEach(async () => {
   repo = createRepo(db);
 });
 
-it('ensureSeed creates one board with an Inbox column and sets activeBoardId', async () => {
+it('ensureSeed creates three default boards with Inbox columns and sets activeBoardId', async () => {
   await repo.ensureSeed();
   const boards = await repo.listBoards();
-  expect(boards).toHaveLength(1);
+  expect(boards).toHaveLength(3);
+  expect(boards.map((b) => b.name)).toEqual(['General', 'Projects', 'Reading List']);
+  expect(boards.map((b) => b.icon)).toEqual(['🏛️', '🚀', '📚']);
   const columns = await repo.listColumns(boards[0].id);
-  expect(columns.map((c) => c.name)).toEqual(['Inbox']);
+  expect(columns.map((c) => c.name)).toContain('Inbox');
   expect((await repo.getMeta()).activeBoardId).toBe(boards[0].id);
 });
 
 it('ensureSeed is idempotent', async () => {
   await repo.ensureSeed();
   await repo.ensureSeed();
-  expect(await repo.listBoards()).toHaveLength(1);
+  expect(await repo.listBoards()).toHaveLength(3);
 });
 
 it('createBoard appends in order and auto-adds an Inbox column', async () => {
@@ -117,8 +119,8 @@ it('getSnapshot returns the full sorted graph plus meta', async () => {
   const inbox = (await repo.listColumns(board.id))[0];
   await repo.createCard(inbox.id, { url: 'a', title: 'a' });
   const snapshot = await repo.getSnapshot();
-  expect(snapshot.boards).toHaveLength(1);
-  expect(snapshot.columns).toHaveLength(1);
+  expect(snapshot.boards).toHaveLength(3);
+  expect(snapshot.columns).toHaveLength(9);
   expect(snapshot.cards).toHaveLength(1);
   expect(snapshot.meta.activeBoardId).toBe(board.id);
 });
