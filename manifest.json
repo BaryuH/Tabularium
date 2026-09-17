@@ -23,6 +23,13 @@
     }
   },
   "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+N",
+        "mac": "Alt+N"
+      },
+      "description": "Open Fast Note popup"
+    },
     "save-active-tab": {
       "suggested_key": { "default": "Alt+S", "mac": "Command+Shift+S" },
       "description": "Save active tab to Tabularium"

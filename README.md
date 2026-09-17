@@ -31,7 +31,7 @@ Works on **Google Chrome**, **Brave**, **Microsoft Edge**, and any Chromium-base
 4. Select the `dist/` folder inside the `Tabularium` repository.
 5. Open a new tab and start organizing with clarity.
 
-> **Tip**: Press `Alt+S` (or `Cmd+Shift+S` on macOS) on any web page to instantly save your current tab to your workspace.
+> **Tip**: Press `Alt+N` on any web page to quickly capture a **Fast Note**, or `Alt+S` (or `Cmd+Shift+S` on macOS) to instantly save your current tab to your workspace.
 
 ---
 
