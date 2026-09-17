@@ -15,6 +15,7 @@ export interface Column {
   name: string;
   icon?: string;
   order: number;
+  isStash?: boolean;
 }
 
 export type CardKind = 'tab' | 'task' | 'note' | 'window';

@@ -49,7 +49,7 @@ export function createWindowModal(store: Store, adapter: TabAdapter | null): Win
                 <span class="window-modal__tab-url" title="${escapeHtml(t.url)}">${escapeHtml(t.url)}</span>
               </div>
               <div class="window-modal__tab-actions">
-                <button class="icon-btn icon-btn--sm" data-action="open-single-tab" data-url="${escapeHtml(t.url)}" title="Open tab in background">${iconExternalLink}</button>
+                <button class="icon-btn icon-btn--sm" data-action="open-single-tab" data-url="${escapeHtml(t.url)}" data-index="${index}" title="Open tab in background">${iconExternalLink}</button>
                 <button class="icon-btn icon-btn--sm" data-action="remove-single-tab" data-index="${index}" title="Remove tab from session">${iconTrash}</button>
               </div>
             </div>
@@ -138,8 +138,10 @@ export function createWindowModal(store: Store, adapter: TabAdapter | null): Win
         }
       }
     }
-    showToast(`Restored ${urls.length} tabs in this window`);
+    const cardIdToDelete = activeCardId;
     close();
+    await store.deleteCard(cardIdToDelete);
+    showToast(`Restored ${urls.length} tabs and removed stash`);
   };
 
   const removeSingleTab = async (index: number): Promise<void> => {
@@ -150,13 +152,40 @@ export function createWindowModal(store: Store, adapter: TabAdapter | null): Win
     const updatedTabs = [...card.tabs];
     updatedTabs.splice(index, 1);
 
-    await store.updateCard(activeCardId, {
-      tabs: updatedTabs,
-      title: card.title.replace(/\(\d+\s+tabs\)/, `(${updatedTabs.length} tabs)`),
-    });
+    if (updatedTabs.length === 0) {
+      const cardIdToDelete = activeCardId;
+      close();
+      await store.deleteCard(cardIdToDelete);
+      showToast('All stash tabs opened; session removed');
+    } else {
+      await store.updateCard(activeCardId, {
+        tabs: updatedTabs,
+        title: card.title.replace(/\(\d+\s+tabs\)/, `(${updatedTabs.length} tabs)`),
+      });
 
-    if (activeCardId) {
-      renderContent(activeCardId);
+      if (activeCardId) {
+        renderContent(activeCardId);
+      }
+    }
+  };
+
+  const openSingleTabAtIndex = async (url: string, index: number, isNewTab: boolean): Promise<void> => {
+    const behavior = store.getState().meta.stashedOpenBehavior ?? 'new-tab';
+    if (adapter) {
+      if (isNewTab || behavior === 'new-tab') {
+        await adapter.openUrl(url);
+      } else {
+        await adapter.openInCurrentTab(url);
+      }
+    } else {
+      if (isNewTab || behavior === 'new-tab') {
+        window.open(url, '_blank');
+      } else {
+        window.location.href = url;
+      }
+    }
+    if (index >= 0) {
+      await removeSingleTab(index);
     }
   };
 
@@ -191,24 +220,32 @@ export function createWindowModal(store: Store, adapter: TabAdapter | null): Win
     }
 
     const openBtn = target.closest<HTMLElement>('[data-action="open-single-tab"]');
-    if (openBtn) {
+    const tabRow = target.closest<HTMLElement>('.window-modal__tab-row');
+    if (openBtn || tabRow) {
       event.preventDefault();
-      const url = openBtn.dataset.url;
+      const url = openBtn?.dataset.url ?? tabRow?.dataset.tabUrl;
+      const idx = parseInt(openBtn?.dataset.index ?? tabRow?.dataset.tabIndex ?? '-1', 10);
       if (url) {
-        const behavior = store.getState().meta.stashedOpenBehavior ?? 'new-tab';
-        if (adapter) {
-          if (behavior === 'current-tab') {
-            void adapter.openInCurrentTab(url);
-          } else {
-            void adapter.openUrl(url);
-          }
-        } else {
-          if (behavior === 'current-tab') {
-            window.location.href = url;
-          } else {
-            window.open(url, '_blank');
-          }
-        }
+        const isNewTab = Boolean(
+          event.button === 2 || event.button === 1 || event.type === 'contextmenu' || event.ctrlKey || event.metaKey,
+        );
+        void openSingleTabAtIndex(url, idx, isNewTab);
+      }
+      return;
+    }
+  };
+
+  const onContextMenu = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement;
+    if (target.closest('[data-action="remove-single-tab"]')) return;
+    const openBtn = target.closest<HTMLElement>('[data-action="open-single-tab"]');
+    const tabRow = target.closest<HTMLElement>('.window-modal__tab-row');
+    if (openBtn || tabRow) {
+      event.preventDefault();
+      const url = openBtn?.dataset.url ?? tabRow?.dataset.tabUrl;
+      const idx = parseInt(openBtn?.dataset.index ?? tabRow?.dataset.tabIndex ?? '-1', 10);
+      if (url) {
+        void openSingleTabAtIndex(url, idx, true);
       }
     }
   };
@@ -223,6 +260,7 @@ export function createWindowModal(store: Store, adapter: TabAdapter | null): Win
       parent.appendChild(container);
 
       container.addEventListener('click', onClick);
+      container.addEventListener('contextmenu', onContextMenu);
       window.addEventListener('keydown', onGlobalKeydown);
     },
   };

@@ -31,7 +31,7 @@ type Editing =
   | { kind: 'pick-column-icon'; columnId: string };
 
 export interface BoardViewOptions {
-  onCardClick?: (url: string) => void;
+  onCardClick?: (url: string, event?: MouseEvent | KeyboardEvent) => void;
   notePanel?: NotePanel;
   cardEditModal?: CardEditModal;
   windowModal?: WindowModal;
@@ -325,7 +325,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
           opts?.notePanel?.open(card.dataset.id);
           return;
         }
-        if (opts?.onCardClick) opts.onCardClick(cardData.url);
+        triggerCardOpen(cardData, event);
       }
     }
   };
@@ -402,12 +402,15 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
                 for (const u of urls) window.open(u, '_blank');
               }
             }
-            showToast(`Restored ${urls.length} tabs in this window`);
+            void store.deleteCard(id);
+            showToast(`Restored ${urls.length} tabs and removed stash`);
           }
         }
         break;
       case 'restore-column-window':
         if (id) {
+          const col = store.getState().columns[id];
+          const isStash = col && (col.isStash || col.icon === '🪟');
           const cards = store.cardsOfColumn(id);
           const urls = cards.map((c) => c.url).filter(Boolean);
           if (urls.length > 0) {
@@ -429,7 +432,15 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
                 for (const u of urls) window.open(u, '_blank');
               }
             }
-            showToast(`Restored ${urls.length} tabs in this window`);
+            for (const c of cards) {
+              void store.deleteCard(c.id);
+            }
+            if (isStash) {
+              void store.deleteColumn(id);
+              showToast(`Restored ${urls.length} tabs and removed stash column`);
+            } else {
+              showToast(`Restored ${urls.length} tabs and removed from column`);
+            }
           } else {
             showToast('No web tabs to restore in this column.');
           }
@@ -542,7 +553,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
             opts?.notePanel?.open(card.dataset.id);
             return;
           }
-          if (opts?.onCardClick) opts.onCardClick(cardData.url);
+          triggerCardOpen(cardData, event);
         }
       }
     }
@@ -574,10 +585,47 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
   };
 
 
+  const triggerCardOpen = (cardData: Card, event?: MouseEvent | KeyboardEvent): void => {
+    if (opts?.onCardClick) opts.onCardClick(cardData.url, event);
+    const col = store.getState().columns[cardData.columnId];
+    if (col && (col.isStash || col.icon === '🪟')) {
+      void store.deleteCard(cardData.id);
+    }
+  };
+
+  const onAuxClick = (event: MouseEvent): void => {
+    if (event.button !== 1) return;
+    const target = event.target as HTMLElement;
+    if (target.closest('[data-action]')) return;
+    const card = target.closest<HTMLElement>('.card');
+    if (card?.dataset.id) {
+      const cardData = store.getState().cards[card.dataset.id];
+      if (cardData && cardData.kind !== 'window' && cardData.kind !== 'task' && cardData.kind !== 'note') {
+        event.preventDefault();
+        triggerCardOpen(cardData, event);
+      }
+    }
+  };
+
+  const onContextMenu = (event: MouseEvent): void => {
+    const target = event.target as HTMLElement;
+    if (target.closest('[data-action]')) return;
+    const card = target.closest<HTMLElement>('.card');
+    if (card?.dataset.id) {
+      const cardData = store.getState().cards[card.dataset.id];
+      if (cardData && cardData.kind !== 'window' && cardData.kind !== 'task' && cardData.kind !== 'note') {
+        event.preventDefault();
+        triggerCardOpen(cardData, event);
+      }
+    }
+  };
+
   return {
     mount(el) {
       root = el;
       el.addEventListener('click', onClick);
+      el.addEventListener('auxclick', onAuxClick);
+      el.addEventListener('contextmenu', onContextMenu);
       el.addEventListener('keydown', onKeydown);
       el.addEventListener('focusout', onFocusOut);
       el.addEventListener('wheel', onWheel, { passive: true });

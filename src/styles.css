@@ -1787,6 +1787,7 @@ body {
   padding: 8px 10px;
   border-radius: var(--radius-sm);
   transition: background 0.12s ease;
+  cursor: pointer;
 }
 
 .window-modal__tab-row:hover {

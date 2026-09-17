@@ -25,7 +25,7 @@ export interface Repo {
   deleteBoard(id: string): Promise<void>;
   reorderBoards(orderedIds: string[]): Promise<void>;
   listColumns(boardId: string): Promise<Column[]>;
-  createColumn(boardId: string, name: string, icon?: string): Promise<Column>;
+  createColumn(boardId: string, name: string, icon?: string, isStash?: boolean): Promise<Column>;
   renameColumn(id: string, name: string): Promise<Column>;
   setColumnIcon(id: string, icon?: string): Promise<Column>;
   deleteColumn(id: string): Promise<void>;
@@ -164,7 +164,7 @@ export function createRepo(db: IDBDatabase): Repo {
     return rows.sort(bySortOrder);
   };
 
-  const createColumn = async (boardId: string, name: string, icon?: string): Promise<Column> => {
+  const createColumn = async (boardId: string, name: string, icon?: string, isStash?: boolean): Promise<Column> => {
     const columns = await listColumns(boardId);
     const column: Column = {
       id: crypto.randomUUID(),
@@ -172,6 +172,7 @@ export function createRepo(db: IDBDatabase): Repo {
       name,
       icon,
       order: nextOrder(columns),
+      ...(isStash ? { isStash: true } : {}),
     };
     const tx = db.transaction(STORE.columns, 'readwrite');
     tx.objectStore(STORE.columns).put(column);

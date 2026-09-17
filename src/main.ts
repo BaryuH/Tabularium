@@ -114,20 +114,36 @@ async function bootstrap(): Promise<void> {
       windowModal,
       tabAdapter,
       onCardClick: tabAdapter
-        ? async (url) => {
-            const behavior = store.getState().meta.openBehavior ?? 'new-tab';
-            if (behavior === 'current-tab') {
-              await tabAdapter.openInCurrentTab(url);
-            } else {
+        ? async (url, event) => {
+            const isNewTab = Boolean(
+              event && (
+                ('button' in event && (event.button === 2 || event.button === 1)) ||
+                event.type === 'contextmenu' ||
+                event.ctrlKey ||
+                event.metaKey
+              ),
+            );
+            const behavior = store.getState().meta.openBehavior ?? 'current-tab';
+            if (isNewTab || behavior === 'new-tab') {
               await tabAdapter.openUrl(url, false);
+            } else {
+              await tabAdapter.openInCurrentTab(url);
             }
           }
-        : (url) => {
-            const behavior = store.getState().meta.openBehavior ?? 'new-tab';
-            if (behavior === 'current-tab') {
-              window.location.href = url;
-            } else {
+        : (url, event) => {
+            const isNewTab = Boolean(
+              event && (
+                ('button' in event && (event.button === 2 || event.button === 1)) ||
+                event.type === 'contextmenu' ||
+                event.ctrlKey ||
+                event.metaKey
+              ),
+            );
+            const behavior = store.getState().meta.openBehavior ?? 'current-tab';
+            if (isNewTab || behavior === 'new-tab') {
               window.open(url, '_blank');
+            } else {
+              window.location.href = url;
             }
           },
     }).mount(boardRoot);

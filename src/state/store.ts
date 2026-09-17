@@ -40,7 +40,7 @@ export interface Store {
   setActiveBoard(id: string): Promise<void>;
   reorderBoards(orderedIds: string[]): Promise<void>;
 
-  createColumn(boardId: string, name: string, icon?: string): Promise<Column>;
+  createColumn(boardId: string, name: string, icon?: string, isStash?: boolean): Promise<Column>;
   renameColumn(id: string, name: string): Promise<void>;
   setColumnIcon(id: string, icon?: string): Promise<void>;
   deleteColumn(id: string): Promise<void>;
@@ -150,8 +150,8 @@ export function createStore(repo: Repo): Store {
       await refresh();
     },
 
-    async createColumn(boardId, name, icon) {
-      const column = await repo.createColumn(boardId, name, icon);
+    async createColumn(boardId, name, icon, isStash) {
+      const column = await repo.createColumn(boardId, name, icon, isStash);
       await refresh();
       return column;
     },
@@ -167,6 +167,7 @@ export function createStore(repo: Repo): Store {
     },
 
     async deleteColumn(id) {
+      if (!state.columns[id]) return;
       await repo.deleteColumn(id);
       await refresh();
     },
@@ -200,7 +201,7 @@ export function createStore(repo: Repo): Store {
 
     async stashWindowToNewColumn(boardId, tabs, customName) {
       const name = customName?.trim() || `${formatDateTag()} Window (${tabs.length} tabs)`;
-      const column = await repo.createColumn(boardId, name, '🪟');
+      const column = await repo.createColumn(boardId, name, '🪟', true);
       for (const tab of tabs) {
         await repo.createCard(column.id, {
           url: tab.url,
@@ -221,8 +222,20 @@ export function createStore(repo: Repo): Store {
     },
 
     async deleteCard(id) {
+      const card = state.cards[id];
+      const columnId = card?.columnId;
       await repo.deleteCard(id);
       await refresh();
+      if (columnId) {
+        const col = state.columns[columnId];
+        if (col && (col.isStash || col.icon === '🪟')) {
+          const hasCards = Object.values(state.cards).some((c) => c.columnId === columnId);
+          if (!hasCards) {
+            await repo.deleteColumn(columnId);
+            await refresh();
+          }
+        }
+      }
     },
 
     async reorderCards(columnId, orderedIds) {
@@ -231,8 +244,20 @@ export function createStore(repo: Repo): Store {
     },
 
     async moveCard(cardId, toColumnId, targetOrderedIds) {
+      const card = state.cards[cardId];
+      const fromColumnId = card?.columnId;
       await repo.moveCard(cardId, toColumnId, targetOrderedIds);
       await refresh();
+      if (fromColumnId && fromColumnId !== toColumnId) {
+        const fromCol = state.columns[fromColumnId];
+        if (fromCol && (fromCol.isStash || fromCol.icon === '🪟')) {
+          const hasCards = Object.values(state.cards).some((c) => c.columnId === fromColumnId);
+          if (!hasCards) {
+            await repo.deleteColumn(fromColumnId);
+            await refresh();
+          }
+        }
+      }
     },
 
     async setTheme(theme) {

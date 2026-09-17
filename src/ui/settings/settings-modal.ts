@@ -38,7 +38,7 @@ export function createSettingsModal(store: Store): SettingsModal {
   const renderContent = (): void => {
     if (!container) return;
     const meta = store.getState().meta;
-    const openBehavior: TabOpenBehavior = meta.openBehavior ?? 'new-tab';
+    const openBehavior: TabOpenBehavior = meta.openBehavior ?? 'current-tab';
     const stashedOpenBehavior: TabOpenBehavior = meta.stashedOpenBehavior ?? 'new-tab';
 
     container.innerHTML = `
@@ -61,24 +61,6 @@ export function createSettingsModal(store: Store): SettingsModal {
             <div class="settings-options" role="radiogroup" aria-label="Tab Opening Behavior">
               <button
                 type="button"
-                class="settings-option ${openBehavior === 'new-tab' ? 'settings-option--active' : ''}"
-                data-action="set-open-behavior"
-                data-value="new-tab"
-                role="radio"
-                aria-checked="${openBehavior === 'new-tab'}"
-              >
-                <span class="settings-option__indicator"></span>
-                <span class="settings-option__content">
-                  <span class="settings-option__label">
-                    Open in new tab
-                    <span class="settings-badge">Recommended</span>
-                  </span>
-                  <span class="settings-option__desc">Opens the tab in the background without switching view. Keeps Tabularium in focus.</span>
-                </span>
-              </button>
-
-              <button
-                type="button"
                 class="settings-option ${openBehavior === 'current-tab' ? 'settings-option--active' : ''}"
                 data-action="set-open-behavior"
                 data-value="current-tab"
@@ -87,8 +69,26 @@ export function createSettingsModal(store: Store): SettingsModal {
               >
                 <span class="settings-option__indicator"></span>
                 <span class="settings-option__content">
-                  <span class="settings-option__label">Open in current tab</span>
-                  <span class="settings-option__desc">Navigates directly in this tab without keeping Tabularium open in the background.</span>
+                  <span class="settings-option__label">
+                    Open in current tab
+                    <span class="settings-badge">Default</span>
+                  </span>
+                  <span class="settings-option__desc">Navigates directly in this tab. Right-click (or Ctrl + click) to open in a new tab.</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="settings-option ${openBehavior === 'new-tab' ? 'settings-option--active' : ''}"
+                data-action="set-open-behavior"
+                data-value="new-tab"
+                role="radio"
+                aria-checked="${openBehavior === 'new-tab'}"
+              >
+                <span class="settings-option__indicator"></span>
+                <span class="settings-option__content">
+                  <span class="settings-option__label">Always open in new tab</span>
+                  <span class="settings-option__desc">Opens every tab card in a new background tab without needing right-click.</span>
                 </span>
               </button>
             </div>
