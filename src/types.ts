@@ -53,6 +53,7 @@ export interface Meta {
   theme: ThemePref;
   schemaVersion: number;
   openBehavior?: TabOpenBehavior;
+  stashedOpenBehavior?: TabOpenBehavior;
   sidebarCollapsed?: boolean;
 }
 

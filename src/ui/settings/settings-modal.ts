@@ -39,6 +39,7 @@ export function createSettingsModal(store: Store): SettingsModal {
     if (!container) return;
     const meta = store.getState().meta;
     const openBehavior: TabOpenBehavior = meta.openBehavior ?? 'new-tab';
+    const stashedOpenBehavior: TabOpenBehavior = meta.stashedOpenBehavior ?? 'new-tab';
 
     container.innerHTML = `
       <div class="settings-modal__backdrop" data-action="close-settings"></div>
@@ -83,6 +84,46 @@ export function createSettingsModal(store: Store): SettingsModal {
                 data-value="current-tab"
                 role="radio"
                 aria-checked="${openBehavior === 'current-tab'}"
+              >
+                <span class="settings-option__indicator"></span>
+                <span class="settings-option__content">
+                  <span class="settings-option__label">Open in current tab</span>
+                  <span class="settings-option__desc">Navigates directly in this tab without keeping Tabularium open in the background.</span>
+                </span>
+              </button>
+            </div>
+          </section>
+          <!-- Section 2: Stashed Window Tab Opening -->
+          <section class="settings-section">
+            <h3 class="settings-section__title">Stashed Window Tab Opening</h3>
+            <p class="settings-section__desc">Choose where tabs from a stashed window session open when restored or clicked.</p>
+
+            <div class="settings-options" role="radiogroup" aria-label="Stashed Window Tab Opening">
+              <button
+                type="button"
+                class="settings-option ${stashedOpenBehavior === 'new-tab' ? 'settings-option--active' : ''}"
+                data-action="set-stashed-open-behavior"
+                data-value="new-tab"
+                role="radio"
+                aria-checked="${stashedOpenBehavior === 'new-tab'}"
+              >
+                <span class="settings-option__indicator"></span>
+                <span class="settings-option__content">
+                  <span class="settings-option__label">
+                    Open in new tab
+                    <span class="settings-badge">Default</span>
+                  </span>
+                  <span class="settings-option__desc">Restores tabs as new tabs. Keeps Tabularium open in the background.</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="settings-option ${stashedOpenBehavior === 'current-tab' ? 'settings-option--active' : ''}"
+                data-action="set-stashed-open-behavior"
+                data-value="current-tab"
+                role="radio"
+                aria-checked="${stashedOpenBehavior === 'current-tab'}"
               >
                 <span class="settings-option__indicator"></span>
                 <span class="settings-option__content">
@@ -256,6 +297,20 @@ export function createSettingsModal(store: Store): SettingsModal {
       }
       return;
     }
+    // Stashed window option button click
+    const stashedOptionBtn = target.closest<HTMLElement>('[data-action="set-stashed-open-behavior"]');
+    if (stashedOptionBtn) {
+      event.preventDefault();
+      const val = stashedOptionBtn.dataset.value as TabOpenBehavior;
+      if (val) {
+        void store.setStashedOpenBehavior(val).then(() => {
+          showToast(`Stashed window tab behavior set to: ${val === 'new-tab' ? 'New tab' : 'Current tab'}`);
+          renderContent();
+        });
+      }
+      return;
+    }
+
 
     // Export JSON
     if (target.closest('[data-action="export-json"]')) {

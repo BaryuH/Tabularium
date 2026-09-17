@@ -384,10 +384,23 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
           const card = store.getState().cards[id];
           const urls = card?.tabs?.map((t) => t.url).filter(Boolean) ?? [];
           if (urls.length > 0) {
+            const behavior = store.getState().meta.stashedOpenBehavior ?? 'new-tab';
             if (opts?.tabAdapter) {
-              void opts.tabAdapter.openTabsInCurrentWindow(urls);
+              if (behavior === 'current-tab') {
+                if (urls.length > 1) {
+                  void opts.tabAdapter.openTabsInCurrentWindow(urls.slice(1));
+                }
+                void opts.tabAdapter.openInCurrentTab(urls[0]);
+              } else {
+                void opts.tabAdapter.openTabsInCurrentWindow(urls);
+              }
             } else {
-              for (const u of urls) window.open(u, '_blank');
+              if (behavior === 'current-tab') {
+                for (let i = 1; i < urls.length; i++) window.open(urls[i], '_blank');
+                window.location.href = urls[0];
+              } else {
+                for (const u of urls) window.open(u, '_blank');
+              }
             }
             showToast(`Restored ${urls.length} tabs in this window`);
           }
@@ -398,10 +411,23 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
           const cards = store.cardsOfColumn(id);
           const urls = cards.map((c) => c.url).filter(Boolean);
           if (urls.length > 0) {
+            const behavior = store.getState().meta.stashedOpenBehavior ?? 'new-tab';
             if (opts?.tabAdapter) {
-              void opts.tabAdapter.openTabsInCurrentWindow(urls);
+              if (behavior === 'current-tab') {
+                if (urls.length > 1) {
+                  void opts.tabAdapter.openTabsInCurrentWindow(urls.slice(1));
+                }
+                void opts.tabAdapter.openInCurrentTab(urls[0]);
+              } else {
+                void opts.tabAdapter.openTabsInCurrentWindow(urls);
+              }
             } else {
-              for (const u of urls) window.open(u, '_blank');
+              if (behavior === 'current-tab') {
+                for (let i = 1; i < urls.length; i++) window.open(urls[i], '_blank');
+                window.location.href = urls[0];
+              } else {
+                for (const u of urls) window.open(u, '_blank');
+              }
             }
             showToast(`Restored ${urls.length} tabs in this window`);
           } else {
