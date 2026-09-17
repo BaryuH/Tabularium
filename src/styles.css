@@ -50,6 +50,26 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 html,
@@ -185,7 +205,7 @@ body {
 .board {
   display: flex;
   flex-direction: column;
-  padding: 20px 24px;
+  padding: 20px 24px 12px 24px;
   overflow: hidden;
 }
 
@@ -337,7 +357,31 @@ body {
   gap: var(--gap);
   height: 100%;
   overflow-x: auto;
-  padding-bottom: 8px;
+  overflow-y: hidden;
+  padding-bottom: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--surface-2);
+}
+
+.columns::-webkit-scrollbar {
+  height: 10px;
+}
+
+.columns::-webkit-scrollbar-track {
+  background: var(--surface-2);
+  border-radius: 999px;
+  margin: 0 4px;
+}
+
+.columns::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+  border: 2px solid var(--surface-2);
+  transition: background 0.15s ease;
+}
+
+.columns::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 @keyframes col-in {

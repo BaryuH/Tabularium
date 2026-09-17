@@ -224,6 +224,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     if (input) {
       input.focus();
       input.select();
+      input.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
     }
     root.querySelectorAll<HTMLImageElement>('img.card__fav').forEach((img) => {
       img.addEventListener('error', () => img.classList.add('card__fav--broken'));
@@ -247,7 +248,13 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         break;
       case 'new-column': {
         const active = store.activeBoard();
-        if (active) await store.createColumn(active.id, name, '📋');
+        if (active) {
+          await store.createColumn(active.id, name, '📋');
+          const columnsEl = root?.querySelector<HTMLElement>('.columns');
+          if (columnsEl) {
+            columnsEl.scrollTo({ left: columnsEl.scrollWidth, behavior: 'smooth' });
+          }
+        }
         break;
       }
       case 'rename-column':
@@ -352,6 +359,10 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     const tabIds = stashable.map((t) => t.id);
     await opts.tabAdapter.closeTabs(tabIds);
     showToast(`Stashed ${items.length} tabs into "${col.name}" · 0% RAM consumed`);
+    const columnsEl = root?.querySelector<HTMLElement>('.columns');
+    if (columnsEl) {
+      columnsEl.scrollTo({ left: columnsEl.scrollWidth, behavior: 'smooth' });
+    }
   };
   const handleAction = (el: HTMLElement): void => {
     const id = el.dataset.id;
@@ -403,6 +414,9 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         if (active) void stashCurrentWindowToColumn(active.id);
         break;
       }
+      case 'add-column':
+        setEditing({ kind: 'new-column' });
+        break;
       case 'rename-column':
         if (id) setEditing({ kind: 'rename-column', id });
         break;
@@ -511,6 +525,28 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     const target = event.target as HTMLElement;
     if (target.matches('.editing-input')) commit((target as HTMLInputElement).value);
   };
+  const onWheel = (event: WheelEvent): void => {
+    if (event.shiftKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+
+    const columnsEl = root?.querySelector<HTMLElement>('.columns');
+    if (!columnsEl || columnsEl.scrollWidth <= columnsEl.clientWidth) return;
+
+    const cardList = (event.target as HTMLElement).closest<HTMLElement>('.column__cards');
+    if (cardList) {
+      const hasVerticalOverflow = cardList.scrollHeight > cardList.clientHeight;
+      if (hasVerticalOverflow) {
+        const scrollingUp = event.deltaY < 0;
+        const scrollingDown = event.deltaY > 0;
+        const canScrollUp = scrollingUp && cardList.scrollTop > 0;
+        const canScrollDown =
+          scrollingDown && Math.ceil(cardList.scrollTop + cardList.clientHeight) < cardList.scrollHeight;
+        if (canScrollUp || canScrollDown) return;
+      }
+    }
+
+    columnsEl.scrollLeft += event.deltaY;
+  };
+
 
   return {
     mount(el) {
@@ -518,6 +554,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       el.addEventListener('click', onClick);
       el.addEventListener('keydown', onKeydown);
       el.addEventListener('focusout', onFocusOut);
+      el.addEventListener('wheel', onWheel, { passive: true });
       store.subscribe(render);
       render();
     },
