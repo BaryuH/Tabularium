@@ -140,3 +140,16 @@ describe('createWindow', () => {
     expect(api.create).toHaveBeenCalledWith({ url: 'https://y.com' });
   });
 });
+
+describe('openTabsInCurrentWindow', () => {
+  it('creates tabs with active: false in current window', async () => {
+    await adapter.openTabsInCurrentWindow(['https://x.com', 'https://y.com']);
+    expect(api.create).toHaveBeenCalledWith({ url: 'https://x.com', active: false });
+    expect(api.create).toHaveBeenCalledWith({ url: 'https://y.com', active: false });
+  });
+
+  it('does nothing when given empty array', async () => {
+    await adapter.openTabsInCurrentWindow([]);
+    expect(api.create).not.toHaveBeenCalled();
+  });
+});

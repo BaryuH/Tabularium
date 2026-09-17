@@ -98,7 +98,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     const doneCls = isDone ? ' card--done' : '';
     const restoreBtn =
       kind === 'window'
-        ? `<button class="icon-btn icon-btn--sm card__action-btn card__restore" data-action="restore-window" data-id="${card.id}" title="Restore window (${card.tabs?.length ?? 0} tabs)">${iconExternalLink}</button>`
+        ? `<button class="icon-btn icon-btn--sm card__action-btn card__restore" data-action="restore-window" data-id="${card.id}" title="Restore all tabs (${card.tabs?.length ?? 0} tabs)">${iconExternalLink}</button>`
         : '';
 
     return `<article class="card card--${kind}${doneCls}" draggable="true" tabindex="0" role="${kind === 'task' ? 'checkbox' : 'link'}" ${kind === 'task' ? `aria-checked="${isDone}"` : ''} data-id="${card.id}">
@@ -157,7 +157,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         ${iconBtn}
         ${name}
         <span class="column__count">${cards.length}</span>
-        ${cards.length ? `<button class="icon-btn icon-btn--sm column__restore" data-action="restore-column-window" data-id="${column.id}" title="Open all tabs in this column as a new window (${cards.length} tabs)">${iconExternalLink}</button>` : ''}
+        ${cards.length ? `<button class="icon-btn icon-btn--sm column__restore" data-action="restore-column-window" data-id="${column.id}" title="Restore all tabs in this column (${cards.length} tabs)">${iconExternalLink}</button>` : ''}
         <button class="icon-btn icon-btn--sm column__del" data-action="delete-column" data-id="${column.id}" title="Delete column">${iconTrash}</button>
       </header>
       ${picker}
@@ -385,11 +385,11 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
           const urls = card?.tabs?.map((t) => t.url).filter(Boolean) ?? [];
           if (urls.length > 0) {
             if (opts?.tabAdapter) {
-              void opts.tabAdapter.createWindow(urls);
+              void opts.tabAdapter.openTabsInCurrentWindow(urls);
             } else {
               for (const u of urls) window.open(u, '_blank');
             }
-            showToast(`Restoring ${urls.length} tabs in a new window`);
+            showToast(`Restored ${urls.length} tabs in this window`);
           }
         }
         break;
@@ -399,11 +399,11 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
           const urls = cards.map((c) => c.url).filter(Boolean);
           if (urls.length > 0) {
             if (opts?.tabAdapter) {
-              void opts.tabAdapter.createWindow(urls);
+              void opts.tabAdapter.openTabsInCurrentWindow(urls);
             } else {
               for (const u of urls) window.open(u, '_blank');
             }
-            showToast(`Restoring ${urls.length} tabs in a new window`);
+            showToast(`Restored ${urls.length} tabs in this window`);
           } else {
             showToast('No web tabs to restore in this column.');
           }

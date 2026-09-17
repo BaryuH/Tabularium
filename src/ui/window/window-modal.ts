@@ -75,7 +75,7 @@ export function createWindowModal(store: Store, adapter: TabAdapter | null): Win
         <div class="window-modal__toolbar">
           <button class="window-modal__restore-btn" data-action="restore-all-window" ${tabs.length === 0 ? 'disabled' : ''}>
             ${iconExternalLink}
-            <span>Restore All in New Window (${tabs.length})</span>
+            <span>Restore all tabs (${tabs.length})</span>
           </button>
         </div>
 
@@ -119,13 +119,13 @@ export function createWindowModal(store: Store, adapter: TabAdapter | null): Win
     if (urls.length === 0) return;
 
     if (adapter) {
-      await adapter.createWindow(urls);
+      await adapter.openTabsInCurrentWindow(urls);
     } else {
       for (const url of urls) {
         window.open(url, '_blank');
       }
     }
-    showToast(`Restored ${urls.length} tabs in a new window`);
+    showToast(`Restored ${urls.length} tabs in this window`);
     close();
   };
 

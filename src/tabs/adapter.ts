@@ -21,7 +21,7 @@ export interface ChromeWindowsApi {
 export interface ChromeTabsApi {
   query(queryInfo: { currentWindow?: boolean }): Promise<chrome.tabs.Tab[]>;
   update(tabId: number, properties: { active?: boolean; url?: string }): Promise<chrome.tabs.Tab>;
-  create(properties: { url?: string }): Promise<chrome.tabs.Tab>;
+  create(properties: { url?: string; active?: boolean }): Promise<chrome.tabs.Tab>;
   remove?(tabIds: number | number[]): Promise<void>;
   onCreated: SimpleEvent<(tab: chrome.tabs.Tab) => void>;
   onRemoved: SimpleEvent<(tabId: number, info: chrome.tabs.TabRemoveInfo) => void>;
@@ -50,6 +50,8 @@ export interface TabAdapter {
   closeTabs(tabIds: number[]): Promise<void>;
   /** Restore a list of URLs into a new browser window. */
   createWindow(urls: string[]): Promise<void>;
+  /** Restore a list of URLs directly into the current browser window. */
+  openTabsInCurrentWindow(urls: string[]): Promise<void>;
 }
 
 function mapTab(tab: chrome.tabs.Tab): TabInfo | null {
@@ -123,6 +125,12 @@ export function createTabAdapter(api: ChromeTabsApi, windowsApi?: ChromeWindowsA
         for (const url of urls) {
           await api.create({ url });
         }
+      }
+    },
+    async openTabsInCurrentWindow(urls: string[]) {
+      if (urls.length === 0) return;
+      for (const url of urls) {
+        await api.create({ url, active: false });
       }
     },
   };
