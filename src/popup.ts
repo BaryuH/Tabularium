@@ -71,7 +71,7 @@ async function init(): Promise<void> {
       }
     }
 
-    render();
+    buildUI();
   } catch (err) {
     console.error('[Tabularium Popup] init failed', err);
     if (app) {
@@ -80,23 +80,10 @@ async function init(): Promise<void> {
   }
 }
 
-function render(): void {
+function buildUI(): void {
   if (!app) return;
 
-  if (state.saved) {
-    const col = state.columns.find((c) => c.id === state.selectedColumnId);
-    const colName = col ? col.name : 'your board';
-    app.innerHTML = `
-      <div class="fast-note__success">
-        <div class="fast-note__success-icon">✓</div>
-        <div class="fast-note__success-title">Note Saved!</div>
-        <div class="fast-note__success-sub">Saved to "${escapeHtml(colName)}" in Tabularium</div>
-      </div>
-    `;
-    return;
-  }
-
-  const isTask = state.kind === 'task';
+  const defaultDatePrefix = `${formatDateTag()} `;
   const columnOptions = state.columns
     .map(
       (c) =>
@@ -104,19 +91,15 @@ function render(): void {
     )
     .join('');
 
-  const attachHtml = state.activeTab
-    ? `<div class="fast-note__attach">
+  const attachSectionHtml = state.activeTab
+    ? `<div class="fast-note__attach" id="attach-container">
         <div class="fast-note__attach-info">
           ${state.activeTab.favIconUrl ? `<img src="${escapeHtml(state.activeTab.favIconUrl)}" alt="" width="14" height="14" />` : '🌐'}
           <span class="fast-note__attach-title" title="${escapeHtml(state.activeTab.title)}">${escapeHtml(state.activeTab.title || state.activeTab.url)}</span>
         </div>
-        <button type="button" class="fast-note__attach-toggle" data-action="toggle-attach">
-          ${state.attachTab ? 'Remove' : '+ Attach Tab'}
-        </button>
+        <button type="button" class="fast-note__attach-toggle" id="attach-toggle-btn">+ Attach Tab</button>
       </div>`
     : '';
-
-  const defaultDatePrefix = `${formatDateTag()} `;
 
   app.innerHTML = `
     <div class="fast-note">
@@ -126,10 +109,10 @@ function render(): void {
           <span class="fast-note__title">Fast Note</span>
         </div>
         <div class="fast-note__kind-switch">
-          <button type="button" class="fast-note__kind-btn ${!isTask ? 'fast-note__kind-btn--active' : ''}" data-action="set-kind" data-kind="note">
+          <button type="button" class="fast-note__kind-btn fast-note__kind-btn--active" id="kind-note-btn" data-kind="note">
             ${iconNote}<span>Note</span>
           </button>
-          <button type="button" class="fast-note__kind-btn ${isTask ? 'fast-note__kind-btn--active' : ''}" data-action="set-kind" data-kind="task">
+          <button type="button" class="fast-note__kind-btn" id="kind-task-btn" data-kind="task">
             ${iconListTodo}<span>Task</span>
           </button>
         </div>
@@ -148,7 +131,7 @@ function render(): void {
           class="fast-note__input"
           id="title-input"
           value="${escapeHtml(defaultDatePrefix)}"
-          placeholder="${isTask ? 'Task title...' : 'Note title...'}"
+          placeholder="Note title..."
           autocomplete="off"
           spellcheck="false"
         />
@@ -158,73 +141,110 @@ function render(): void {
         <textarea
           class="fast-note__textarea"
           id="note-textarea"
-          placeholder="${isTask ? 'Add task details, checklist or steps...' : 'Capture quick thoughts, links or snippets...'}"
+          placeholder="Capture quick thoughts, links or snippets..."
           spellcheck="false"
         ></textarea>
       </div>
 
-      ${attachHtml}
+      ${attachSectionHtml}
 
       <div class="fast-note__footer">
         <span class="fast-note__hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> to save</span>
         <div class="fast-note__actions">
-          <button type="button" class="fast-note__btn fast-note__btn--primary" id="save-btn" ${state.saving ? 'disabled' : ''}>
-            ${state.saving ? 'Saving...' : 'Save Note'}
+          <button type="button" class="fast-note__btn fast-note__btn--primary" id="save-btn">
+            Save Note
           </button>
         </div>
       </div>
     </div>
   `;
 
-  // Focus textarea for immediate writing
+  // Elements
   const textarea = app.querySelector<HTMLTextAreaElement>('#note-textarea');
+  const titleInput = app.querySelector<HTMLInputElement>('#title-input');
+  const colSelect = app.querySelector<HTMLSelectElement>('#column-select');
+  const saveBtn = app.querySelector<HTMLButtonElement>('#save-btn');
+  const kindNoteBtn = app.querySelector<HTMLButtonElement>('#kind-note-btn');
+  const kindTaskBtn = app.querySelector<HTMLButtonElement>('#kind-task-btn');
+  const attachContainer = app.querySelector<HTMLElement>('#attach-container');
+  const attachToggleBtn = app.querySelector<HTMLButtonElement>('#attach-toggle-btn');
+
+  // Focus textarea immediately
   if (textarea) {
     textarea.focus();
   }
 
-  // Attach event listeners
-  const colSelect = app.querySelector<HTMLSelectElement>('#column-select');
+  // Column select
   if (colSelect) {
     colSelect.addEventListener('change', () => {
       state.selectedColumnId = colSelect.value;
     });
   }
 
-  const saveBtn = app.querySelector<HTMLButtonElement>('#save-btn');
-  if (saveBtn) {
-    saveBtn.addEventListener('click', () => {
-      void save();
+  // Kind toggle (Note vs Task) without re-rendering DOM
+  const updateKindUI = (kind: CardKind): void => {
+    state.kind = kind;
+    const isTask = kind === 'task';
+    kindNoteBtn?.classList.toggle('fast-note__kind-btn--active', !isTask);
+    kindTaskBtn?.classList.toggle('fast-note__kind-btn--active', isTask);
+    if (titleInput) {
+      titleInput.placeholder = isTask ? 'Task title...' : 'Note title...';
+    }
+    if (textarea) {
+      textarea.placeholder = isTask
+        ? 'Add task details, checklist or steps...'
+        : 'Capture quick thoughts, links or snippets...';
+    }
+    if (saveBtn && !state.saving) {
+      saveBtn.textContent = isTask ? 'Save Task' : 'Save Note';
+    }
+  };
+
+  kindNoteBtn?.addEventListener('click', () => updateKindUI('note'));
+  kindTaskBtn?.addEventListener('click', () => updateKindUI('task'));
+
+  // Attach / Remove Tab toggle without re-rendering DOM
+  if (attachToggleBtn && attachContainer && state.activeTab) {
+    attachToggleBtn.addEventListener('click', () => {
+      state.attachTab = !state.attachTab;
+      attachContainer.classList.toggle('fast-note__attach--active', state.attachTab);
+      attachToggleBtn.textContent = state.attachTab ? 'Remove' : '+ Attach Tab';
+
+      if (titleInput) {
+        const curVal = titleInput.value.trim();
+        const tabTitle = state.activeTab?.title ?? '';
+        if (state.attachTab) {
+          // If title was only date prefix or empty, auto-populate tab title
+          if (curVal === '' || curVal === defaultDatePrefix.trim()) {
+            titleInput.value = `${defaultDatePrefix}${tabTitle}`;
+          }
+        } else {
+          // If title was auto-populated with tab title, revert to date prefix
+          if (curVal === `${defaultDatePrefix}${tabTitle}`.trim()) {
+            titleInput.value = defaultDatePrefix;
+          }
+        }
+      }
     });
   }
 
-  app.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
-    const kindBtn = target.closest<HTMLElement>('[data-action="set-kind"]');
-    if (kindBtn?.dataset.kind) {
-      state.kind = kindBtn.dataset.kind as CardKind;
-      render();
-      return;
-    }
-    const attachBtn = target.closest<HTMLElement>('[data-action="toggle-attach"]');
-    if (attachBtn) {
-      state.attachTab = !state.attachTab;
-      render();
-    }
+  // Save button
+  saveBtn?.addEventListener('click', () => {
+    void save();
   });
 
-  window.addEventListener('keydown', onKeydown);
-}
-
-function onKeydown(e: KeyboardEvent): void {
-  if (e.key === 'Escape') {
-    e.preventDefault();
-    window.close();
-    return;
-  }
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-    e.preventDefault();
-    void save();
-  }
+  // Keyboard shortcut listener (bound once)
+  window.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      window.close();
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      void save();
+    }
+  });
 }
 
 async function save(): Promise<void> {
@@ -232,25 +252,39 @@ async function save(): Promise<void> {
 
   const titleInput = app?.querySelector<HTMLInputElement>('#title-input');
   const textarea = app?.querySelector<HTMLTextAreaElement>('#note-textarea');
-  if (!titleInput || !textarea) return;
+  const saveBtn = app?.querySelector<HTMLButtonElement>('#save-btn');
+  if (!titleInput || !textarea || !saveBtn) return;
 
   const rawTitle = titleInput.value.trim();
   const noteBody = textarea.value.trim();
 
-  // If both title and body are empty (or only default date tag)
+  // Validate: if both title and body are empty (or only default date tag)
   const isOnlyDateTag = /^\[[A-Za-z]{3}\s+\d{1,2}\]$/.test(rawTitle);
   if ((!rawTitle || isOnlyDateTag) && !noteBody && !state.attachTab) {
     textarea.focus();
+    textarea.style.borderColor = 'var(--note-accent)';
+    setTimeout(() => {
+      textarea.style.borderColor = '';
+    }, 600);
     return;
   }
 
-  const title = rawTitle || (state.attachTab && state.activeTab?.title ? state.activeTab.title : '(untitled)');
+  const defaultDate = `${formatDateTag()} `;
+  let title = rawTitle;
+  if (!title || isOnlyDateTag) {
+    if (state.attachTab && state.activeTab?.title) {
+      title = `${defaultDate}${state.activeTab.title}`;
+    } else {
+      title = title || '(untitled)';
+    }
+  }
+
   const columnId = state.selectedColumnId || state.columns[0]?.id;
   if (!columnId) return;
 
   state.saving = true;
-  const saveBtn = app?.querySelector<HTMLButtonElement>('#save-btn');
-  if (saveBtn) saveBtn.textContent = 'Saving...';
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
 
   try {
     const url = state.attachTab && state.activeTab ? state.activeTab.url : '';
@@ -261,22 +295,26 @@ async function save(): Promise<void> {
       url,
     });
 
-    // Broadcast change to any open Tabularium New Tab pages
+    // Broadcast change notice to open Tabularium New Tab pages
     if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
       chrome.runtime.sendMessage({ type: 'tabularium:external-change' }).catch(() => {});
     }
 
-    state.saved = true;
-    render();
+    // Smooth success feedback
+    saveBtn.style.background = '#22c55e';
+    saveBtn.style.borderColor = '#22c55e';
+    saveBtn.textContent = '✓ Saved!';
 
-    // Auto-close popup after short visual confirmation
     setTimeout(() => {
       window.close();
-    }, 600);
+    }, 380);
   } catch (err) {
     console.error('[Tabularium Popup] Save failed', err);
     state.saving = false;
-    if (saveBtn) saveBtn.textContent = 'Save Note';
+    saveBtn.disabled = false;
+    saveBtn.style.background = '';
+    saveBtn.style.borderColor = '';
+    saveBtn.textContent = state.kind === 'task' ? 'Save Task' : 'Save Note';
   }
 }
 
