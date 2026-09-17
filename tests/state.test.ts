@@ -181,6 +181,15 @@ it('setOpenBehavior updates meta.openBehavior', async () => {
   expect(store.getState().meta.openBehavior).toBe('new-tab');
 });
 
+it('setStashedOpenBehavior updates meta.stashedOpenBehavior', async () => {
+  expect(store.getState().meta.stashedOpenBehavior).toBeUndefined();
+  await store.setStashedOpenBehavior('current-tab');
+  expect(store.getState().meta.stashedOpenBehavior).toBe('current-tab');
+
+  await store.setStashedOpenBehavior('new-tab');
+  expect(store.getState().meta.stashedOpenBehavior).toBe('new-tab');
+});
+
 it('store.importSnapshot refreshes in-memory state with imported data', async () => {
   const backup = {
     boards: [{ id: 'imp-b', name: 'Imported', order: 1000, createdAt: 1, updatedAt: 1 }],

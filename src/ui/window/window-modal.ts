@@ -118,11 +118,24 @@ export function createWindowModal(store: Store, adapter: TabAdapter | null): Win
     const urls = card.tabs.map((t) => t.url).filter(Boolean);
     if (urls.length === 0) return;
 
+    const behavior = store.getState().meta.stashedOpenBehavior ?? 'new-tab';
     if (adapter) {
-      await adapter.openTabsInCurrentWindow(urls);
+      if (behavior === 'current-tab') {
+        if (urls.length > 1) {
+          await adapter.openTabsInCurrentWindow(urls.slice(1));
+        }
+        await adapter.openInCurrentTab(urls[0]);
+      } else {
+        await adapter.openTabsInCurrentWindow(urls);
+      }
     } else {
-      for (const url of urls) {
-        window.open(url, '_blank');
+      if (behavior === 'current-tab') {
+        for (let i = 1; i < urls.length; i++) window.open(urls[i], '_blank');
+        window.location.href = urls[0];
+      } else {
+        for (const url of urls) {
+          window.open(url, '_blank');
+        }
       }
     }
     showToast(`Restored ${urls.length} tabs in this window`);
@@ -182,10 +195,19 @@ export function createWindowModal(store: Store, adapter: TabAdapter | null): Win
       event.preventDefault();
       const url = openBtn.dataset.url;
       if (url) {
+        const behavior = store.getState().meta.stashedOpenBehavior ?? 'new-tab';
         if (adapter) {
-          void adapter.openUrl(url);
+          if (behavior === 'current-tab') {
+            void adapter.openInCurrentTab(url);
+          } else {
+            void adapter.openUrl(url);
+          }
         } else {
-          window.open(url, '_blank');
+          if (behavior === 'current-tab') {
+            window.location.href = url;
+          } else {
+            window.open(url, '_blank');
+          }
         }
       }
     }

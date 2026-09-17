@@ -55,6 +55,7 @@ export interface Store {
   moveCard(cardId: string, toColumnId: string, targetOrderedIds: string[]): Promise<void>;
   setTheme(theme: ThemePref): Promise<void>;
   setOpenBehavior(behavior: TabOpenBehavior): Promise<void>;
+  setStashedOpenBehavior(behavior: TabOpenBehavior): Promise<void>;
   setSidebarCollapsed(collapsed: boolean): Promise<void>;
   exportSnapshot(): Promise<Snapshot>;
   importSnapshot(snapshot: Snapshot): Promise<void>;
@@ -244,6 +245,10 @@ export function createStore(repo: Repo): Store {
       await refresh();
     },
 
+    async setStashedOpenBehavior(behavior) {
+      await repo.setMeta({ stashedOpenBehavior: behavior });
+      await refresh();
+    },
     async setSidebarCollapsed(collapsed) {
       await repo.setMeta({ sidebarCollapsed: collapsed });
       await refresh();
