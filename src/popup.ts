@@ -169,10 +169,20 @@ function buildUI(): void {
   const attachContainer = app.querySelector<HTMLElement>('#attach-container');
   const attachToggleBtn = app.querySelector<HTMLButtonElement>('#attach-toggle-btn');
 
-  // Focus textarea immediately
-  if (textarea) {
-    textarea.focus();
+  // Default focus on title input with cursor placed at the end
+  if (titleInput) {
+    titleInput.focus();
+    const len = titleInput.value.length;
+    titleInput.setSelectionRange(len, len);
   }
+
+  // Pressing Enter in title input moves focus to content textarea
+  titleInput?.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      textarea?.focus();
+    }
+  });
 
   // Column select
   if (colSelect) {
@@ -205,14 +215,35 @@ function buildUI(): void {
 
   // Attach / Remove Tab toggle without re-rendering DOM
   if (attachToggleBtn && attachContainer && state.activeTab) {
+    const tabTitle = state.activeTab.title || state.activeTab.url;
+    const tabUrl = state.activeTab.url;
+    const attachmentSnippet = `\n\n---\n🔗 ${tabTitle}\n${tabUrl}`;
+
     attachToggleBtn.addEventListener('click', () => {
       state.attachTab = !state.attachTab;
       attachContainer.classList.toggle('fast-note__attach--active', state.attachTab);
       attachToggleBtn.textContent = state.attachTab ? 'Remove' : '+ Attach Tab';
 
+      // Append / remove snippet at end of content textarea
+      if (textarea) {
+        const curText = textarea.value;
+        if (state.attachTab) {
+          if (!curText.includes(tabUrl)) {
+            textarea.value = curText.trim() === ''
+              ? `🔗 ${tabTitle}\n${tabUrl}`
+              : `${curText.trimEnd()}${attachmentSnippet}`;
+          }
+        } else {
+          if (curText.includes(attachmentSnippet)) {
+            textarea.value = curText.replace(attachmentSnippet, '').trimEnd();
+          } else if (curText.trim() === `🔗 ${tabTitle}\n${tabUrl}`) {
+            textarea.value = '';
+          }
+        }
+      }
+
       if (titleInput) {
         const curVal = titleInput.value.trim();
-        const tabTitle = state.activeTab?.title ?? '';
         if (state.attachTab) {
           // If title was only date prefix or empty, auto-populate tab title
           if (curVal === '' || curVal === defaultDatePrefix.trim()) {
