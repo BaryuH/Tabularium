@@ -66,7 +66,7 @@ export function createWindowModal(store: Store, adapter: TabAdapter | null): Win
             <span class="window-modal__icon">${iconWindow}</span>
             <div>
               <h3 class="window-modal__title">${escapeHtml(title)}</h3>
-              <div class="window-modal__meta-text">Saved ${escapeHtml(dateStr)} · ${tabs.length} tab${tabs.length === 1 ? '' : 's'} (0% RAM)</div>
+              <div class="window-modal__meta-text">Saved ${escapeHtml(dateStr)} · ${tabs.length} tab${tabs.length === 1 ? '' : 's'}</div>
             </div>
           </div>
           <button class="icon-btn window-modal__close" data-action="close-window-modal" title="Close (Esc)">${iconX}</button>

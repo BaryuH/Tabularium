@@ -205,7 +205,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         ? `<div class="column column--add">${inputHtml('', 'Column name')}</div>`
         : `<div class="column column--add">
             <button class="add-column" data-action="add-column">${iconPlus}<span>Add column</span></button>
-            <button class="add-column add-column--stash" data-action="stash-window-new-column" title="Stash current window as a new column (0% RAM)">${iconWindow}<span>Stash window</span></button>
+            <button class="add-column add-column--stash" data-action="stash-window-new-column" title="Stash current window as a new column">${iconWindow}<span>Stash window</span></button>
           </div>`;
     return `<div class="columns">${columns}${adder}</div>`;
   };
@@ -358,7 +358,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     const col = await store.stashWindowToNewColumn(boardId, items);
     const tabIds = stashable.map((t) => t.id);
     await opts.tabAdapter.closeTabs(tabIds);
-    showToast(`Stashed ${items.length} tabs into "${col.name}" · 0% RAM consumed`);
+    showToast(`Stashed ${items.length} tabs into "${col.name}"`);
     const columnsEl = root?.querySelector<HTMLElement>('.columns');
     if (columnsEl) {
       columnsEl.scrollTo({ left: columnsEl.scrollWidth, behavior: 'smooth' });

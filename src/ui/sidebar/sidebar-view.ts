@@ -63,7 +63,7 @@ export function createSidebarView(adapter: TabAdapter | null, store: Store): Sid
 
     const count = `<span class="sidebar__count">${tabs.length}</span>`;
     const stashBtn = !collapsed && tabs.length
-      ? `<button class="icon-btn icon-btn--sm" data-action="stash-sidebar-window" title="Stash all open tabs into a new column (0% RAM)">${iconWindow}</button>`
+      ? `<button class="icon-btn icon-btn--sm" data-action="stash-sidebar-window" title="Stash all open tabs into a new column">${iconWindow}</button>`
       : '';
     const header = collapsed
       ? `<div class="sidebar__header sidebar__header--collapsed">${toggleBtn}</div>`
@@ -114,7 +114,7 @@ export function createSidebarView(adapter: TabAdapter | null, store: Store): Sid
 
     const col = await store.stashWindowToNewColumn(active.id, items);
     await adapter.closeTabs(stashable.map((t) => t.id));
-    showToast(`Stashed ${items.length} tabs into new column "${col.name}" · 0% RAM`);
+    showToast(`Stashed ${items.length} tabs into new column "${col.name}"`);
   };
 
   const onClick = (event: MouseEvent): void => {
