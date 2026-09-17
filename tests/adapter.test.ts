@@ -103,6 +103,11 @@ describe('openUrl', () => {
     await adapter.openUrl('https://new.com');
     expect(api.create).toHaveBeenCalledWith({ url: 'https://new.com' });
   });
+
+  it('calls chrome.tabs.create with active: false when specified', async () => {
+    await adapter.openUrl('https://background.com', false);
+    expect(api.create).toHaveBeenCalledWith({ url: 'https://background.com', active: false });
+  });
 });
 
 describe('openInCurrentTab', () => {

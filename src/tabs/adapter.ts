@@ -44,7 +44,7 @@ export interface TabAdapter {
   /** Subscribe to real-time tab changes; returns an unsubscribe function. */
   subscribe(listener: (tabs: TabInfo[]) => void): () => void;
   activate(tabId: number): Promise<void>;
-  openUrl(url: string): Promise<void>;
+  openUrl(url: string, active?: boolean): Promise<void>;
   openInCurrentTab(url: string): Promise<void>;
   /** Close tabs by ID to instantly release their RAM. */
   closeTabs(tabIds: number[]): Promise<void>;
@@ -98,8 +98,12 @@ export function createTabAdapter(api: ChromeTabsApi, windowsApi?: ChromeWindowsA
       await api.update(tabId, { active: true });
     },
 
-    async openUrl(url) {
-      await api.create({ url });
+    async openUrl(url, active) {
+      if (active !== undefined) {
+        await api.create({ url, active });
+      } else {
+        await api.create({ url });
+      }
     },
 
     async openInCurrentTab(url) {

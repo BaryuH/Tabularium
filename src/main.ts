@@ -6,7 +6,6 @@ import { openDatabase } from './db/schema';
 import { createRepo } from './db/repo';
 import { createStore } from './state/store';
 import { tryCreateTabAdapter, onExternalChange } from './tabs/adapter';
-import { resolveTarget } from './tabs/resolve';
 import { applyTheme, revealBody } from './theme';
 import { createBoardView } from './ui/board/board-view';
 import { createCardEditModal } from './ui/card/card-edit-modal';
@@ -120,10 +119,7 @@ async function bootstrap(): Promise<void> {
             if (behavior === 'current-tab') {
               await tabAdapter.openInCurrentTab(url);
             } else {
-              const tabs = await tabAdapter.queryCurrentWindow();
-              const result = resolveTarget(url, tabs);
-              if (result.action === 'activate') await tabAdapter.activate(result.tabId);
-              else await tabAdapter.openUrl(result.url);
+              await tabAdapter.openUrl(url, false);
             }
           }
         : (url) => {
