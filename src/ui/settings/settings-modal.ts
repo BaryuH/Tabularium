@@ -73,7 +73,7 @@ export function createSettingsModal(store: Store): SettingsModal {
                     Open in new tab
                     <span class="settings-badge">Recommended</span>
                   </span>
-                  <span class="settings-option__desc">Activates existing tab if already open, or creates a new tab. Keeps Tabularium open.</span>
+                  <span class="settings-option__desc">Opens the tab in the background without switching view. Keeps Tabularium in focus.</span>
                 </span>
               </button>
 
