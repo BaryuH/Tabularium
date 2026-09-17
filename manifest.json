@@ -12,6 +12,16 @@
     "newtab": "index.html"
   },
   "permissions": ["tabs"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Tabularium Fast Note",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
   "commands": {
     "save-active-tab": {
       "suggested_key": { "default": "Alt+S", "mac": "Command+Shift+S" },
