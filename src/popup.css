@@ -44,14 +44,14 @@
 }
 
 body {
-  width: 380px;
+  width: 500px;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 13.5px;
   line-height: 1.5;
   letter-spacing: -0.01em;
-  padding: 16px;
+  padding: 18px 20px;
   user-select: none;
   overflow: hidden;
 }
@@ -59,7 +59,7 @@ body {
 .fast-note {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 /* Header */
@@ -87,7 +87,7 @@ body {
 }
 
 .fast-note__title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
@@ -126,12 +126,12 @@ body {
 .fast-note__target {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: var(--surface);
   border: 1px solid var(--border);
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .fast-note__target-label {
@@ -146,7 +146,7 @@ body {
   border: none;
   color: var(--text);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   outline: none;
@@ -171,9 +171,9 @@ body {
   border-radius: var(--radius-sm);
   color: var(--text);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  padding: 8px 10px;
+  padding: 10px 12px;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -185,15 +185,15 @@ body {
 
 .fast-note__textarea {
   width: 100%;
-  height: 110px;
+  height: 155px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-family: inherit;
-  font-size: 13px;
-  line-height: 1.6;
-  padding: 8px 10px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  padding: 10px 12px;
   resize: vertical;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -213,9 +213,15 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  font-size: 12px;
-  gap: 8px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  gap: 10px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.fast-note__attach--active {
+  border-color: var(--accent);
+  background: rgba(146, 142, 232, 0.08);
 }
 
 .fast-note__attach-info {
@@ -242,14 +248,30 @@ body {
 }
 
 .fast-note__attach-toggle {
-  background: none;
-  border: none;
-  color: var(--accent);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
   cursor: pointer;
   font-family: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
+  padding: 3px 9px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.fast-note__attach-toggle:hover {
+  background: var(--border);
+}
+
+.fast-note__attach--active .fast-note__attach-toggle {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.fast-note__attach--active .fast-note__attach-toggle:hover {
+  background: rgba(239, 68, 68, 0.15);
 }
 
 /* Footer */
@@ -284,10 +306,10 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
+  padding: 8px 18px;
   border-radius: var(--radius-sm);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   border: none;
