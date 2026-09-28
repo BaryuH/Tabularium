@@ -1,4 +1,4 @@
-import '@fontsource-variable/geist';
+import '@fontsource-variable/plus-jakarta-sans';
 import './popup.css';
 import { openDatabase } from './db/schema';
 import { createRepo, type Repo } from './db/repo';
