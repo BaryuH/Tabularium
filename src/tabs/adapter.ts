@@ -76,21 +76,31 @@ export function createTabAdapter(api: ChromeTabsApi, windowsApi?: ChromeWindowsA
 
     subscribe(listener) {
       let generation = 0;
-      const refresh = (): void => {
+      let scheduled = false;
+
+      const runRefresh = (): void => {
+        scheduled = false;
         const gen = ++generation;
         void queryCurrentWindow().then((tabs) => {
           if (gen === generation) listener(tabs);
         });
       };
-      api.onCreated.addListener(refresh);
-      api.onRemoved.addListener(refresh);
-      api.onUpdated.addListener(refresh);
-      api.onActivated.addListener(refresh);
+
+      const batchedRefresh = (): void => {
+        if (scheduled) return;
+        scheduled = true;
+        queueMicrotask(runRefresh);
+      };
+
+      api.onCreated.addListener(batchedRefresh);
+      api.onRemoved.addListener(batchedRefresh);
+      api.onUpdated.addListener(batchedRefresh);
+      api.onActivated.addListener(batchedRefresh);
       return () => {
-        api.onCreated.removeListener(refresh);
-        api.onRemoved.removeListener(refresh);
-        api.onUpdated.removeListener(refresh);
-        api.onActivated.removeListener(refresh);
+        api.onCreated.removeListener(batchedRefresh);
+        api.onRemoved.removeListener(batchedRefresh);
+        api.onUpdated.removeListener(batchedRefresh);
+        api.onActivated.removeListener(batchedRefresh);
       };
     },
 

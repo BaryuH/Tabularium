@@ -89,6 +89,16 @@ describe('subscribe', () => {
     expect(api.onUpdated.count).toBe(0);
     expect(api.onActivated.count).toBe(0);
   });
+
+  it('batches burst events in the same turn into a single query and refresh', async () => {
+    const listener = vi.fn();
+    adapter.subscribe(listener);
+    api.onCreated.fire();
+    api.onUpdated.fire();
+    api.onActivated.fire();
+    await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+    expect(api.query).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('activate', () => {
