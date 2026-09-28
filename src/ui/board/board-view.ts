@@ -218,10 +218,6 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
   const render = (): void => {
     if (!root) return;
 
-    // Suppress background board re-rendering while user is actively typing in the note drawer or editing modal
-    if (opts?.notePanel?.isOpen() || opts?.cardEditModal?.isOpen()) {
-      return;
-    }
     // 1. Capture scroll positions of board and all columns to prevent layout jumps
     const scrollPositions = new Map<string, number>();
     root.querySelectorAll<HTMLElement>('.column[data-column-id]').forEach((col) => {

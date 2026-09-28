@@ -32,6 +32,18 @@ export function createNotePanel(store: Store, onCardClick?: (url: string) => voi
     clearTimeout(saveTimer);
     saveTimer = undefined;
 
+    if (container) {
+      const titleInput = container.querySelector<HTMLInputElement>('.note-panel__title-input');
+      const textarea = container.querySelector<HTMLTextAreaElement>('.note-panel__textarea');
+      if (titleInput) {
+        const val = titleInput.value.trim() || '(untitled)';
+        pendingTitle = val;
+      }
+      if (textarea) {
+        pendingNote = textarea.value;
+      }
+    }
+
     if (pendingNew) {
       const cleanTitle = (pendingTitle ?? '').replace(HAS_DATE_PREFIX, '').trim();
       const rawNote = (pendingNote ?? '').trim();
@@ -231,10 +243,10 @@ export function createNotePanel(store: Store, onCardClick?: (url: string) => voi
   };
 
   const close = (): void => {
+    flushSave();
     const wasActive = activeCardId;
     activeCardId = null;
     pendingNew = null;
-    flushSave();
     if (wasActive) {
       const card = store.getState().cards[wasActive];
       if (card) {
