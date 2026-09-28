@@ -117,16 +117,34 @@ async function bootstrap(): Promise<void> {
   // Refresh state when the service worker saves a tab (M9 quick-save).
   onExternalChange(() => { void store.applyExternalChange(); });
 
+  // Board + card-click (activate matching tab or open new)
+  const tabAdapter = tryCreateTabAdapter();
+
+  const handleCardClick = tabAdapter
+    ? async (url: string) => {
+        const behavior = store.getState().meta.openBehavior ?? 'new-tab';
+        if (behavior === 'current-tab') {
+          await tabAdapter.openInCurrentTab(url);
+        } else {
+          await tabAdapter.openUrl(url, false);
+        }
+      }
+    : (url: string) => {
+        const behavior = store.getState().meta.openBehavior ?? 'new-tab';
+        if (behavior === 'current-tab') {
+          window.location.href = url;
+        } else {
+          window.open(url, '_blank');
+        }
+      };
+
   // Note editor panel (spacious slide-over drawer)
-  const notePanel = createNotePanel(store);
+  const notePanel = createNotePanel(store, handleCardClick);
   notePanel.mount(app);
 
   // Card edit modal (title & link editing)
   const cardEditModal = createCardEditModal(store);
   cardEditModal.mount(app);
-
-  // Board + card-click (activate matching tab or open new)
-  const tabAdapter = tryCreateTabAdapter();
 
   // Window session inspector & restore modal
   const windowModal = createWindowModal(store, tabAdapter);
@@ -143,23 +161,7 @@ async function bootstrap(): Promise<void> {
       windowModal,
       emojiPickerModal,
       tabAdapter,
-      onCardClick: tabAdapter
-        ? async (url) => {
-            const behavior = store.getState().meta.openBehavior ?? 'new-tab';
-            if (behavior === 'current-tab') {
-              await tabAdapter.openInCurrentTab(url);
-            } else {
-              await tabAdapter.openUrl(url, false);
-            }
-          }
-        : (url) => {
-            const behavior = store.getState().meta.openBehavior ?? 'new-tab';
-            if (behavior === 'current-tab') {
-              window.location.href = url;
-            } else {
-              window.open(url, '_blank');
-            }
-          },
+      onCardClick: handleCardClick,
     }).mount(boardRoot);
   }
 

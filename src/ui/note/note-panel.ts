@@ -8,7 +8,7 @@
  * - Escape or click-outside to close
  * - Live character and word counts
  */
-import { iconX, iconTask, iconTaskDone, iconListTodo, iconNote } from '../icons';
+import { iconX, iconTask, iconTaskDone, iconListTodo, iconNote, iconExternalLink } from '../icons';
 import { escapeHtml, formatDateTag, HAS_DATE_PREFIX } from '../../util';
 import type { Store } from '../../state/store';
 
@@ -20,7 +20,7 @@ export interface NotePanel {
   mount(parent: HTMLElement): void;
 }
 
-export function createNotePanel(store: Store): NotePanel {
+export function createNotePanel(store: Store, onCardClick?: (url: string) => void): NotePanel {
   let activeCardId: string | null = null;
   let pendingNew: { columnId: string; kind: 'task' | 'note' } | null = null;
   let container: HTMLElement | null = null;
@@ -113,6 +113,38 @@ export function createNotePanel(store: Store): NotePanel {
       day: 'numeric',
       year: 'numeric',
     });
+    let attachedLinkHtml = '';
+    if (card?.url) {
+      let hostname = '';
+      try {
+        hostname = new URL(card.url).hostname.replace(/^www\./, '');
+      } catch {
+        hostname = card.url;
+      }
+      const fav = card.favIconUrl
+        ? `<img class="note-panel__embed-fav" src="${escapeHtml(card.favIconUrl)}" alt="" width="14" height="14" />`
+        : '🔗';
+      attachedLinkHtml = `
+        <div class="note-panel__embed-card">
+          <div class="note-panel__embed-info" data-action="open-embed-link" data-url="${escapeHtml(card.url)}" title="Open: ${escapeHtml(card.url)}">
+            <span class="note-panel__embed-icon">${fav}</span>
+            <div class="note-panel__embed-text">
+              <span class="note-panel__embed-host">${escapeHtml(hostname)}</span>
+              <span class="note-panel__embed-url">${escapeHtml(card.url)}</span>
+            </div>
+          </div>
+          <div class="note-panel__embed-actions">
+            <button type="button" class="note-panel__embed-btn" data-action="open-embed-link" data-url="${escapeHtml(card.url)}" title="Open link">
+              ${iconExternalLink}
+              <span>Open</span>
+            </button>
+            <button type="button" class="note-panel__embed-btn note-panel__embed-btn--remove" data-action="remove-embed-link" title="Remove link">
+              ${iconX}
+            </button>
+          </div>
+        </div>
+      `;
+    }
 
     container.innerHTML = `
       <div class="note-panel__backdrop" data-action="close-note"></div>
@@ -136,6 +168,7 @@ export function createNotePanel(store: Store): NotePanel {
             autocomplete="off"
             spellcheck="false"
           />
+          ${attachedLinkHtml}
           <textarea
             class="note-panel__textarea"
             placeholder="${textareaPlaceholder}"
@@ -254,7 +287,26 @@ export function createNotePanel(store: Store): NotePanel {
   };
 
   const onClick = (event: MouseEvent): void => {
-    const toggleBtn = (event.target as HTMLElement).closest<HTMLElement>('[data-action="toggle-panel-task"]');
+    const target = event.target as HTMLElement;
+    const openLink = target.closest<HTMLElement>('[data-action="open-embed-link"]');
+    if (openLink) {
+      event.preventDefault();
+      const url = openLink.dataset.url;
+      if (url) {
+        if (onCardClick) onCardClick(url);
+        else window.open(url, '_blank');
+      }
+      return;
+    }
+    const removeLink = target.closest<HTMLElement>('[data-action="remove-embed-link"]');
+    if (removeLink && activeCardId) {
+      event.preventDefault();
+      void store.updateCard(activeCardId, { url: '', favIconUrl: undefined }).then(() => {
+        if (activeCardId) renderContent(activeCardId);
+      });
+      return;
+    }
+    const toggleBtn = target.closest<HTMLElement>('[data-action="toggle-panel-task"]');
     if (toggleBtn && activeCardId) {
       event.preventDefault();
       void store.toggleTaskComplete(activeCardId).then(() => {
@@ -262,7 +314,7 @@ export function createNotePanel(store: Store): NotePanel {
       });
       return;
     }
-    const el = (event.target as HTMLElement).closest<HTMLElement>('[data-action="close-note"]');
+    const el = target.closest<HTMLElement>('[data-action="close-note"]');
     if (el) {
       event.preventDefault();
       close();

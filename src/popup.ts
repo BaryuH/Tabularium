@@ -401,15 +401,18 @@ async function save(): Promise<void> {
 
   try {
     const url = state.attachTab && state.activeTab ? state.activeTab.url : '';
+    const favIconUrl = state.attachTab && state.activeTab ? state.activeTab.favIconUrl : undefined;
 
     if (state.selectedCardId) {
       // Update existing note/card
       const existing = state.columnCards.find((c) => c.id === state.selectedCardId);
       const updatedUrl = url || (existing?.url ?? '');
+      const updatedFav = favIconUrl || (existing?.favIconUrl ?? undefined);
       await repo.updateCard(state.selectedCardId, {
         title,
         note: noteBody,
         url: updatedUrl,
+        favIconUrl: updatedFav,
       });
 
       // Broadcast change notice to open Tabularium New Tab pages
@@ -427,6 +430,7 @@ async function save(): Promise<void> {
         note: noteBody,
         kind: state.kind,
         url,
+        favIconUrl,
       });
 
       // Broadcast change notice to open Tabularium New Tab pages

@@ -832,6 +832,67 @@ body.has-no-wallpaper {
   text-overflow: ellipsis;
 }
 
+/* Embedded link chip on task/note cards */
+.card__link-embed {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  padding: 2px 7px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  max-width: 100%;
+  width: fit-content;
+}
+
+.card__link-embed:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.card__embed-icon {
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.card__embed-fav {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.card__embed-host {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  max-width: 140px;
+}
+
+.card__embed-open-icon {
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+  margin-left: 1px;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.card__link-embed:hover .card__embed-open-icon {
+  opacity: 1;
+  color: var(--accent);
+  transform: translate(1px, -1px);
+}
+
 
 /* Card kind variants */
 .card--task {
@@ -1401,6 +1462,116 @@ body.has-no-wallpaper {
   opacity: 0.6;
 }
 
+
+/* Embedded link card in note panel */
+.note-panel__embed-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 2px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.note-panel__embed-card:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.note-panel__embed-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.note-panel__embed-icon {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.note-panel__embed-fav {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.note-panel__embed-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.note-panel__embed-host {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.note-panel__embed-url {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 280px;
+}
+
+.note-panel__embed-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.note-panel__embed-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.note-panel__embed-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.note-panel__embed-btn--remove {
+  padding: 4px 6px;
+  color: var(--text-muted);
+}
+
+.note-panel__embed-btn--remove:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
 .note-panel__textarea {
   flex: 1;
   width: 100%;
