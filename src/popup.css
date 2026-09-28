@@ -134,34 +134,46 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
-/* Destination target */
+/* Destination target & Note selection */
+.fast-note__targets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
 .fast-note__target {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: var(--surface);
   border: 1px solid var(--border);
-  padding: 8px 12px;
+  padding: 7px 10px;
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: 12.5px;
+  overflow: hidden;
 }
 
 .fast-note__target-label {
   color: var(--text-muted);
   font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .fast-note__select {
   flex: 1;
+  min-width: 0;
   background: transparent;
   border: none;
   color: var(--text);
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
   outline: none;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .fast-note__select option {
