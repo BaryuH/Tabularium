@@ -91,6 +91,30 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
               .join('')}</span>
           </span>`
         : '';
+    let linkEmbedHtml = '';
+    if ((kind === 'task' || kind === 'note') && card.url) {
+      let hostname = '';
+      try {
+        hostname = new URL(card.url).hostname.replace(/^www\./, '');
+      } catch {
+        hostname = card.url;
+      }
+      const fav = card.favIconUrl
+        ? `<img class="card__embed-fav" src="${escapeHtml(card.favIconUrl)}" alt="" width="12" height="12" />`
+        : '🔗';
+      linkEmbedHtml = `
+        <span class="card__link-embed" data-action="open-attached-url" data-url="${escapeHtml(card.url)}" title="Open attached link: ${escapeHtml(card.url)}">
+          <span class="card__embed-icon">${fav}</span>
+          <span class="card__embed-host">${escapeHtml(hostname)}</span>
+          <span class="card__embed-open-icon">${iconExternalLink}</span>
+        </span>
+      `;
+    }
+
+    const openLinkBtn =
+      (kind === 'task' || kind === 'note') && card.url
+        ? `<button class="icon-btn icon-btn--sm card__action-btn card__open-link" data-action="open-attached-url" data-url="${escapeHtml(card.url)}" title="Open attached link (${escapeHtml(card.url)})">${iconExternalLink}</button>`
+        : '';
 
     const doneCls = isDone ? ' card--done' : '';
     const restoreBtn =
@@ -103,9 +127,11 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       <span class="card__body">
         <span class="card__title">${titleHtml}</span>
         ${windowMeta}
+        ${linkEmbedHtml}
       </span>
       <span class="card__actions">
         ${restoreBtn}
+        ${openLinkBtn}
         <button class="icon-btn icon-btn--sm card__action-btn card__edit" data-action="edit-card" data-id="${card.id}" title="Edit title or link">${iconPencil}</button>
         <button class="icon-btn icon-btn--sm card__action-btn card__del" data-action="delete-card" data-id="${card.id}" title="Remove">${iconX}</button>
       </span>
@@ -448,6 +474,17 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       case 'delete-column':
         if (id) void handleDeleteColumn(id);
         break;
+      case 'open-attached-url': {
+        const targetUrl = el.dataset.url;
+        if (targetUrl) {
+          if (opts?.onCardClick) {
+            opts.onCardClick(targetUrl);
+          } else {
+            window.open(targetUrl, '_blank');
+          }
+        }
+        break;
+      }
       case 'delete-card':
         if (id) {
           const cardEl = root?.querySelector<HTMLElement>(`.card[data-id="${id}"]`);
