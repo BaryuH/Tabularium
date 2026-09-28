@@ -47,6 +47,7 @@ export interface Card {
 
 export type ThemePref = 'light' | 'dark';
 export type TabOpenBehavior = 'new-tab' | 'current-tab';
+export type WallpaperQualityMode = 'lightweight' | 'original';
 
 export interface Meta {
   activeBoardId: string | null;
@@ -55,6 +56,9 @@ export interface Meta {
   openBehavior?: TabOpenBehavior;
   stashedOpenBehavior?: TabOpenBehavior;
   sidebarCollapsed?: boolean;
+  wallpaper?: string;
+  wallpaperAccent?: string;
+  wallpaperQuality?: WallpaperQualityMode;
 }
 
 /** Full persisted graph, used to hydrate the in-memory store. */

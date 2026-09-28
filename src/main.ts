@@ -6,7 +6,7 @@ import { openDatabase } from './db/schema';
 import { createRepo } from './db/repo';
 import { createStore } from './state/store';
 import { tryCreateTabAdapter, onExternalChange } from './tabs/adapter';
-import { applyTheme, revealBody } from './theme';
+import { applyTheme, applyWallpaper, revealBody } from './theme';
 import { createBoardView } from './ui/board/board-view';
 import { createCardEditModal } from './ui/card/card-edit-modal';
 import { createNotePanel } from './ui/note/note-panel';
@@ -58,6 +58,15 @@ async function bootstrap(): Promise<void> {
   // Render shell, apply cached theme, restore sidebar rail, reveal body immediately.
   const initialTheme = getCachedTheme();
   applyTheme(initialTheme);
+  try {
+    const cachedWallpaper = localStorage.getItem('tabularium_wallpaper');
+    const cachedAccent = localStorage.getItem('tabularium_wallpaper_accent');
+    if (cachedWallpaper) {
+      applyWallpaper(cachedWallpaper, cachedAccent ?? undefined);
+    }
+  } catch {
+    // Ignore localStorage read errors
+  }
 
   const initialSidebar = getCachedSidebar();
   app.innerHTML = LAYOUT;
@@ -83,6 +92,20 @@ async function bootstrap(): Promise<void> {
   const db = await openDatabase();
   const store = createStore(createRepo(db));
   await store.hydrate();
+  // Reconcile and apply wallpaper & accent
+  const initialMeta = store.getState().meta;
+  applyWallpaper(initialMeta.wallpaper, initialMeta.wallpaperAccent);
+  try {
+    if (initialMeta.wallpaper) {
+      localStorage.setItem('tabularium_wallpaper', initialMeta.wallpaper);
+      if (initialMeta.wallpaperAccent) localStorage.setItem('tabularium_wallpaper_accent', initialMeta.wallpaperAccent);
+    } else {
+      localStorage.removeItem('tabularium_wallpaper');
+      localStorage.removeItem('tabularium_wallpaper_accent');
+    }
+  } catch {
+    // Ignore localStorage quota errors
+  }
 
   // Reconcile and cache theme & sidebar state from IndexedDB
   const currentTheme = store.getState().meta.theme;
@@ -94,10 +117,23 @@ async function bootstrap(): Promise<void> {
   localStorage.setItem(CACHE_SIDEBAR_KEY, currentSidebar ? '1' : '0');
 
   store.subscribe(() => {
-    const nextTheme = store.getState().meta.theme;
+    const m = store.getState().meta;
+    const nextTheme = m.theme;
     localStorage.setItem(CACHE_THEME_KEY, nextTheme);
-    const nextSidebar = Boolean(store.getState().meta.sidebarCollapsed);
+    const nextSidebar = Boolean(m.sidebarCollapsed);
     localStorage.setItem(CACHE_SIDEBAR_KEY, nextSidebar ? '1' : '0');
+    applyWallpaper(m.wallpaper, m.wallpaperAccent);
+    try {
+      if (m.wallpaper) {
+        localStorage.setItem('tabularium_wallpaper', m.wallpaper);
+        if (m.wallpaperAccent) localStorage.setItem('tabularium_wallpaper_accent', m.wallpaperAccent);
+      } else {
+        localStorage.removeItem('tabularium_wallpaper');
+        localStorage.removeItem('tabularium_wallpaper_accent');
+      }
+    } catch {
+      // Ignore localStorage quota errors
+    }
   });
 
   // Refresh state when the service worker saves a tab (M9 quick-save).

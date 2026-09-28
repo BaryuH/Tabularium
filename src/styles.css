@@ -25,6 +25,8 @@
   --radius-sm: 6px;
   --gap: 16px;
   --column-width: 320px;
+  --default-wallpaper: url('/tabularium.jpg');
+  --wallpaper-scrim: rgba(18, 18, 22, 0.78);
   color-scheme: dark;
 }
 
@@ -49,6 +51,7 @@
   --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
   --card-shadow-hover: 0 4px 10px rgba(15, 23, 42, 0.08);
   --card-bg: #ffffff;
+  --wallpaper-scrim: rgba(248, 250, 252, 0.82);
   color-scheme: light;
 }
 
@@ -73,6 +76,7 @@
   --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
   --card-shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.35);
   --card-bg: linear-gradient(180deg, rgba(38, 38, 44, 0.95) 0%, rgba(32, 32, 38, 0.95) 100%);
+  --wallpaper-scrim: rgba(18, 18, 22, 0.78);
   color-scheme: dark;
 }
 
@@ -107,7 +111,8 @@ body {
 }
 
 body {
-  background: var(--bg-gradient, var(--bg));
+  background: linear-gradient(var(--wallpaper-scrim), var(--wallpaper-scrim)),
+              var(--wallpaper-url, var(--default-wallpaper)) center/cover no-repeat fixed;
   background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-sans);
@@ -118,6 +123,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   opacity: 0;
   transition: opacity 0.15s, color 0.18s ease;
+}
+
+body.has-no-wallpaper {
+  background: var(--bg-gradient, var(--bg));
+  background-attachment: fixed;
 }
 
 #app {
@@ -1489,8 +1499,75 @@ body {
 
 .note-panel__textarea::placeholder {
   color: var(--text-muted);
-  opacity: 0.5;
 }
+
+/* ── Wallpaper Settings Section ──────────────────────────────── */
+.settings-wallpaper-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.settings-wallpaper__preview-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.settings-wallpaper__thumb {
+  width: 100px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.settings-wallpaper__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-wallpaper__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-wallpaper__sub {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-wallpaper__swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.settings-wallpaper__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 
 /* ── Settings modal ─────────────────────────────────────────── */
 .settings-modal-container {
