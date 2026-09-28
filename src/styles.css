@@ -1,15 +1,24 @@
 :root {
-  --bg: #161619;
+  --bg: #131316;
+  --bg-gradient: radial-gradient(ellipse 90% 55% at 50% -10%, rgba(146, 142, 232, 0.08), transparent 70%),
+                 radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.035), transparent 45%),
+                 linear-gradient(180deg, #17171c 0%, #121215 100%);
+  --topbar-bg: linear-gradient(180deg, rgba(30, 30, 36, 0.98) 0%, rgba(22, 22, 27, 0.98) 100%);
+  --sidebar-bg: linear-gradient(180deg, rgba(26, 26, 32, 0.98) 0%, rgba(19, 19, 23, 0.98) 100%);
+  --column-bg: linear-gradient(180deg, rgba(29, 29, 35, 0.85) 0%, rgba(22, 22, 27, 0.92) 100%);
+  --brand-gradient: linear-gradient(135deg, #ffffff 40%, #c5c2ff 100%);
   --surface: #1e1e22;
   --surface-2: #26262c;
-  --column-bg: #1e1e22;
-  --border: #33333b;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.05);
   --text: #ececee;
+  --text-muted: #9a9aa3;
   --accent: #928ee8;
   --note-accent: #f59e0b;
   --window-accent: #38bdf8;
-  --card-shadow: none;
-  --card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --card-shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --card-bg: linear-gradient(180deg, rgba(38, 38, 44, 0.95) 0%, rgba(32, 32, 38, 0.95) 100%);
   --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
   --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --radius: 10px;
@@ -20,32 +29,50 @@
 }
 
 :root[data-theme="light"] {
-  --bg: #eef2f6;
+  --bg: #f8fafc;
+  --bg-gradient: radial-gradient(ellipse 90% 50% at 50% -10%, rgba(79, 70, 229, 0.05), transparent 70%),
+                 radial-gradient(circle at 100% 100%, rgba(2, 132, 199, 0.03), transparent 40%),
+                 linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  --topbar-bg: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  --sidebar-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 248, 251, 0.98) 100%);
+  --column-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  --brand-gradient: linear-gradient(135deg, #0f172a 40%, #4338ca 100%);
   --surface: #ffffff;
   --surface-2: #e2e8f0;
-  --column-bg: #f8fafc;
   --border: #cbd5e1;
+  --border-subtle: rgba(0, 0, 0, 0.05);
   --text: #0f172a;
+  --text-muted: #64748b;
   --accent: #4f46e5;
   --note-accent: #d97706;
   --window-accent: #0284c7;
   --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
   --card-shadow-hover: 0 4px 10px rgba(15, 23, 42, 0.08);
+  --card-bg: #ffffff;
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
-  --bg: #161619;
+  --bg: #131316;
+  --bg-gradient: radial-gradient(ellipse 90% 55% at 50% -10%, rgba(146, 142, 232, 0.08), transparent 70%),
+                 radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.035), transparent 45%),
+                 linear-gradient(180deg, #17171c 0%, #121215 100%);
+  --topbar-bg: linear-gradient(180deg, rgba(30, 30, 36, 0.98) 0%, rgba(22, 22, 27, 0.98) 100%);
+  --sidebar-bg: linear-gradient(180deg, rgba(26, 26, 32, 0.98) 0%, rgba(19, 19, 23, 0.98) 100%);
+  --column-bg: linear-gradient(180deg, rgba(29, 29, 35, 0.85) 0%, rgba(22, 22, 27, 0.92) 100%);
+  --brand-gradient: linear-gradient(135deg, #ffffff 40%, #c5c2ff 100%);
   --surface: #1e1e22;
   --surface-2: #26262c;
-  --column-bg: #1e1e22;
-  --border: #33333b;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.05);
   --text: #ececee;
   --text-muted: #9a9aa3;
   --accent: #928ee8;
   --note-accent: #f59e0b;
   --window-accent: #38bdf8;
-  --card-shadow: none;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --card-shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --card-bg: linear-gradient(180deg, rgba(38, 38, 44, 0.95) 0%, rgba(32, 32, 38, 0.95) 100%);
   color-scheme: dark;
 }
 
@@ -80,7 +107,8 @@ body {
 }
 
 body {
-  background: var(--bg);
+  background: var(--bg-gradient, var(--bg));
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-sans);
   letter-spacing: -0.01em;
@@ -89,7 +117,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   opacity: 0;
-  transition: opacity 0.15s, background-color 0.2s ease, color 0.18s ease;
+  transition: opacity 0.15s, color 0.18s ease;
 }
 
 #app {
@@ -113,8 +141,9 @@ body {
   align-items: center;
   gap: 12px;
   padding: 12px 24px;
-  background: var(--surface);
+  background: var(--topbar-bg, var(--surface));
   border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
   grid-column: 1 / -1;
 }
 
@@ -129,12 +158,15 @@ body {
   font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.01em;
+  background: var(--brand-gradient, var(--text));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
-
 
 .sidebar {
   border-right: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--sidebar-bg, var(--surface));
+  box-shadow: inset -1px 0 0 var(--border-subtle, transparent);
   padding: var(--gap);
   overflow-y: auto;
   transition: padding 0.22s cubic-bezier(0.16, 1, 0.3, 1);
@@ -405,9 +437,10 @@ body {
   background: var(--column-bg, var(--surface));
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
   contain: layout style;
   animation: col-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  transition: border-color 0.18s ease, outline 0.15s ease, background-color 0.2s ease;
+  transition: border-color 0.18s ease, outline 0.15s ease, background-color 0.2s ease, box-shadow 0.18s ease;
 }
 
 .column__head {
@@ -559,7 +592,7 @@ body {
   align-items: center;
   gap: 10px;
   padding: 9px 11px;
-  background: var(--surface);
+  background: var(--card-bg, var(--surface));
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--card-shadow, none);
