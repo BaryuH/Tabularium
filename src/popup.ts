@@ -299,14 +299,14 @@ function buildUI(): void {
   if (attachToggleBtn && attachContainer && state.activeTab) {
     const tabTitle = state.activeTab.title || state.activeTab.url;
     const tabUrl = state.activeTab.url;
-    const attachmentSnippet = `\n\n---\n🔗 ${tabTitle}\n${tabUrl}`;
+    const attachmentSnippet = `\n\n\n\n\n---\n🔗 ${tabTitle}\n${tabUrl}`;
 
     attachToggleBtn.addEventListener('click', () => {
       state.attachTab = !state.attachTab;
       attachContainer.classList.toggle('fast-note__attach--active', state.attachTab);
       attachToggleBtn.textContent = state.attachTab ? 'Remove' : '+ Attach Tab';
 
-      // Append / remove snippet at end of content textarea
+      // Append / remove snippet at end of content textarea (separated by 5 newlines)
       if (textarea) {
         const curText = textarea.value;
         if (state.attachTab) {
@@ -318,6 +318,9 @@ function buildUI(): void {
         } else {
           if (curText.includes(attachmentSnippet)) {
             textarea.value = curText.replace(attachmentSnippet, '').trimEnd();
+          } else if (curText.includes(`---\n🔗 ${tabTitle}\n${tabUrl}`)) {
+            const idx = curText.indexOf(`---\n🔗 ${tabTitle}\n${tabUrl}`);
+            textarea.value = curText.slice(0, idx).trimEnd();
           } else if (curText.trim() === `🔗 ${tabTitle}\n${tabUrl}`) {
             textarea.value = '';
           }
