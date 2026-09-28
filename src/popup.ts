@@ -4,11 +4,13 @@ import { openDatabase } from './db/schema';
 import { createRepo, type Repo } from './db/repo';
 import { formatDateTag, escapeHtml } from './util';
 import { iconNote, iconListTodo } from './ui/icons';
-import type { CardKind, Column } from './types';
+import type { Card, CardKind, Column } from './types';
 
 interface PopupState {
   columns: Column[];
   selectedColumnId: string;
+  columnCards: Card[];
+  selectedCardId: string | null;
   kind: CardKind;
   attachTab: boolean;
   activeTab: { url: string; title: string; favIconUrl?: string } | null;
@@ -19,6 +21,8 @@ interface PopupState {
 const state: PopupState = {
   columns: [],
   selectedColumnId: '',
+  columnCards: [],
+  selectedCardId: null,
   kind: 'note',
   attachTab: false,
   activeTab: null,
@@ -57,6 +61,7 @@ async function init(): Promise<void> {
       state.columns = await repo.listColumns(boardId);
       if (state.columns.length > 0) {
         state.selectedColumnId = state.columns[0].id;
+        state.columnCards = await repo.listCards(state.selectedColumnId);
       }
     }
 
@@ -91,6 +96,17 @@ function buildUI(): void {
     )
     .join('');
 
+  const renderCardOptions = (): string => {
+    let html = `<option value="">+ New Note</option>`;
+    for (const c of state.columnCards) {
+      const isSelected = state.selectedCardId === c.id;
+      const icon = c.kind === 'task' ? '☑️' : '📝';
+      const label = c.title.trim() || c.url || '(untitled)';
+      html += `<option value="${escapeHtml(c.id)}" ${isSelected ? 'selected' : ''}>${icon} ${escapeHtml(label)}</option>`;
+    }
+    return html;
+  };
+
   const attachSectionHtml = state.activeTab
     ? `<div class="fast-note__attach" id="attach-container">
         <div class="fast-note__attach-info">
@@ -118,11 +134,19 @@ function buildUI(): void {
         </div>
       </div>
 
-      <div class="fast-note__target">
-        <span class="fast-note__target-label">Save to:</span>
-        <select class="fast-note__select" id="column-select" aria-label="Destination Column">
-          ${columnOptions}
-        </select>
+      <div class="fast-note__targets">
+        <div class="fast-note__target">
+          <span class="fast-note__target-label">Col:</span>
+          <select class="fast-note__select" id="column-select" aria-label="Destination Column">
+            ${columnOptions}
+          </select>
+        </div>
+        <div class="fast-note__target">
+          <span class="fast-note__target-label">Note:</span>
+          <select class="fast-note__select" id="card-select" aria-label="Target Note">
+            ${renderCardOptions()}
+          </select>
+        </div>
       </div>
 
       <div class="fast-note__field">
@@ -163,6 +187,7 @@ function buildUI(): void {
   const textarea = app.querySelector<HTMLTextAreaElement>('#note-textarea');
   const titleInput = app.querySelector<HTMLInputElement>('#title-input');
   const colSelect = app.querySelector<HTMLSelectElement>('#column-select');
+  const cardSelect = app.querySelector<HTMLSelectElement>('#card-select');
   const saveBtn = app.querySelector<HTMLButtonElement>('#save-btn');
   const kindNoteBtn = app.querySelector<HTMLButtonElement>('#kind-note-btn');
   const kindTaskBtn = app.querySelector<HTMLButtonElement>('#kind-task-btn');
@@ -184,10 +209,63 @@ function buildUI(): void {
     }
   });
 
-  // Column select
+  const resetToNewNote = (): void => {
+    state.selectedCardId = null;
+    if (cardSelect) cardSelect.value = '';
+    if (titleInput) {
+      titleInput.value = defaultDatePrefix;
+    }
+    if (textarea) {
+      textarea.value = '';
+    }
+    if (saveBtn && !state.saving) {
+      saveBtn.textContent = state.kind === 'task' ? 'Save Task' : 'Save Note';
+    }
+  };
+
+  const selectExistingCard = (cardId: string): void => {
+    state.selectedCardId = cardId;
+    const card = state.columnCards.find((c) => c.id === cardId);
+    if (!card) return;
+
+    if (titleInput) {
+      titleInput.value = card.title === '(untitled)' ? '' : card.title;
+    }
+    if (textarea) {
+      textarea.value = card.note ?? '';
+      // Focus textarea at the end to immediately continue typing
+      textarea.focus();
+      const len = textarea.value.length;
+      textarea.setSelectionRange(len, len);
+    }
+    if (saveBtn && !state.saving) {
+      saveBtn.textContent = 'Update Note';
+    }
+  };
+
+  // Column select change
   if (colSelect) {
-    colSelect.addEventListener('change', () => {
+    colSelect.addEventListener('change', async () => {
       state.selectedColumnId = colSelect.value;
+      if (repo && state.selectedColumnId) {
+        state.columnCards = await repo.listCards(state.selectedColumnId);
+        if (cardSelect) {
+          cardSelect.innerHTML = renderCardOptions();
+        }
+      }
+      resetToNewNote();
+    });
+  }
+
+  // Card select change (pick existing note vs new note)
+  if (cardSelect) {
+    cardSelect.addEventListener('change', () => {
+      const val = cardSelect.value;
+      if (val) {
+        selectExistingCard(val);
+      } else {
+        resetToNewNote();
+      }
     });
   }
 
@@ -206,7 +284,11 @@ function buildUI(): void {
         : 'Capture quick thoughts, links or snippets...';
     }
     if (saveBtn && !state.saving) {
-      saveBtn.textContent = isTask ? 'Save Task' : 'Save Note';
+      if (state.selectedCardId) {
+        saveBtn.textContent = isTask ? 'Update Task' : 'Update Note';
+      } else {
+        saveBtn.textContent = isTask ? 'Save Task' : 'Save Note';
+      }
     }
   };
 
@@ -242,7 +324,7 @@ function buildUI(): void {
         }
       }
 
-      if (titleInput) {
+      if (titleInput && !state.selectedCardId) {
         const curVal = titleInput.value.trim();
         if (state.attachTab) {
           // If title was only date prefix or empty, auto-populate tab title
@@ -319,22 +401,43 @@ async function save(): Promise<void> {
 
   try {
     const url = state.attachTab && state.activeTab ? state.activeTab.url : '';
-    await repo.createCard(columnId, {
-      title,
-      note: noteBody,
-      kind: state.kind,
-      url,
-    });
 
-    // Broadcast change notice to open Tabularium New Tab pages
-    if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
-      chrome.runtime.sendMessage({ type: 'tabularium:external-change' }).catch(() => {});
+    if (state.selectedCardId) {
+      // Update existing note/card
+      const existing = state.columnCards.find((c) => c.id === state.selectedCardId);
+      const updatedUrl = url || (existing?.url ?? '');
+      await repo.updateCard(state.selectedCardId, {
+        title,
+        note: noteBody,
+        url: updatedUrl,
+      });
+
+      // Broadcast change notice to open Tabularium New Tab pages
+      if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
+        chrome.runtime.sendMessage({ type: 'tabularium:external-change' }).catch(() => {});
+      }
+
+      saveBtn.style.background = '#22c55e';
+      saveBtn.style.borderColor = '#22c55e';
+      saveBtn.textContent = '✓ Updated!';
+    } else {
+      // Create new note/card
+      await repo.createCard(columnId, {
+        title,
+        note: noteBody,
+        kind: state.kind,
+        url,
+      });
+
+      // Broadcast change notice to open Tabularium New Tab pages
+      if (typeof chrome !== 'undefined' && chrome.runtime?.sendMessage) {
+        chrome.runtime.sendMessage({ type: 'tabularium:external-change' }).catch(() => {});
+      }
+
+      saveBtn.style.background = '#22c55e';
+      saveBtn.style.borderColor = '#22c55e';
+      saveBtn.textContent = '✓ Saved!';
     }
-
-    // Smooth success feedback
-    saveBtn.style.background = '#22c55e';
-    saveBtn.style.borderColor = '#22c55e';
-    saveBtn.textContent = '✓ Saved!';
 
     setTimeout(() => {
       window.close();
@@ -345,7 +448,7 @@ async function save(): Promise<void> {
     saveBtn.disabled = false;
     saveBtn.style.background = '';
     saveBtn.style.borderColor = '';
-    saveBtn.textContent = state.kind === 'task' ? 'Save Task' : 'Save Note';
+    saveBtn.textContent = state.selectedCardId ? 'Update Note' : (state.kind === 'task' ? 'Save Task' : 'Save Note');
   }
 }
 
