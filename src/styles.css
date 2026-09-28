@@ -5,8 +5,8 @@
                  linear-gradient(180deg, #17171c 0%, #121215 100%);
   --topbar-bg: linear-gradient(180deg, rgba(30, 30, 36, 0.98) 0%, rgba(22, 22, 27, 0.98) 100%);
   --sidebar-bg: linear-gradient(180deg, rgba(26, 26, 32, 0.98) 0%, rgba(19, 19, 23, 0.98) 100%);
-  --column-bg: linear-gradient(180deg, rgba(26, 26, 33, 0.65) 0%, rgba(18, 18, 23, 0.75) 100%);
-  --column-border: rgba(255, 255, 255, 0.1);
+  --column-bg: linear-gradient(180deg, rgba(28, 28, 38, 0.40) 0%, rgba(16, 16, 22, 0.52) 100%);
+  --column-border: rgba(255, 255, 255, 0.14);
   --brand-gradient: linear-gradient(135deg, #ffffff 40%, #c5c2ff 100%);
   --surface: #1e1e22;
   --surface-2: #26262c;
@@ -18,8 +18,7 @@
   --note-accent: #f59e0b;
   --window-accent: #38bdf8;
   --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-  --card-shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.35);
-  --card-bg: linear-gradient(180deg, rgba(38, 38, 44, 0.95) 0%, rgba(32, 32, 38, 0.95) 100%);
+  --card-bg: linear-gradient(180deg, rgba(38, 38, 48, 0.75) 0%, rgba(26, 26, 34, 0.82) 100%);
   --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
   --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --radius: 10px;
@@ -38,8 +37,8 @@
                  linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
   --topbar-bg: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   --sidebar-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 248, 251, 0.98) 100%);
-  --column-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(246, 248, 252, 0.85) 100%);
-  --column-border: rgba(203, 213, 225, 0.7);
+  --column-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(246, 248, 252, 0.65) 100%);
+  --column-border: rgba(255, 255, 255, 0.85);
   --brand-gradient: linear-gradient(135deg, #0f172a 40%, #4338ca 100%);
   --surface: #ffffff;
   --surface-2: #e2e8f0;
@@ -52,7 +51,7 @@
   --window-accent: #0284c7;
   --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
   --card-shadow-hover: 0 4px 10px rgba(15, 23, 42, 0.08);
-  --card-bg: #ffffff;
+  --card-bg: rgba(255, 255, 255, 0.88);
   --wallpaper-scrim: rgba(248, 250, 252, 0.82);
   color-scheme: light;
 }
@@ -63,8 +62,8 @@
                  radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.035), transparent 45%),
                  linear-gradient(180deg, #17171c 0%, #121215 100%);
   --topbar-bg: linear-gradient(180deg, rgba(30, 30, 36, 0.98) 0%, rgba(22, 22, 27, 0.98) 100%);
-  --column-bg: linear-gradient(180deg, rgba(26, 26, 33, 0.65) 0%, rgba(18, 18, 23, 0.75) 100%);
-  --column-border: rgba(255, 255, 255, 0.1);
+  --column-bg: linear-gradient(180deg, rgba(28, 28, 38, 0.40) 0%, rgba(16, 16, 22, 0.52) 100%);
+  --column-border: rgba(255, 255, 255, 0.14);
   --brand-gradient: linear-gradient(135deg, #ffffff 40%, #c5c2ff 100%);
   --surface: #1e1e22;
   --surface-2: #26262c;
@@ -76,8 +75,7 @@
   --note-accent: #f59e0b;
   --window-accent: #38bdf8;
   --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-  --card-shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.35);
-  --card-bg: linear-gradient(180deg, rgba(38, 38, 44, 0.95) 0%, rgba(32, 32, 38, 0.95) 100%);
+  --card-bg: linear-gradient(180deg, rgba(38, 38, 48, 0.75) 0%, rgba(26, 26, 34, 0.82) 100%);
   --wallpaper-scrim: rgba(18, 18, 22, 0.78);
   color-scheme: dark;
 }
@@ -657,12 +655,11 @@ body.has-no-wallpaper {
   flex-direction: column;
   max-height: 100%;
   background: var(--column-bg);
-  backdrop-filter: blur(16px) saturate(135%);
-  -webkit-backdrop-filter: blur(16px) saturate(135%);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
   border: 1px solid var(--column-border, var(--border));
   border-radius: var(--radius);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  contain: layout style;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
   content-visibility: auto;
   contain-intrinsic-size: var(--column-width) 500px;
   animation: col-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
@@ -788,11 +785,13 @@ body.has-no-wallpaper {
   padding: 10px 14px;
   font-size: 13px;
   color: var(--text-muted);
-  background: none;
-  border: 1px dashed var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
   border-radius: var(--radius);
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.15s;
 }
 
 .add-column:hover {
@@ -830,6 +829,8 @@ body.has-no-wallpaper {
   gap: 10px;
   padding: 9px 11px;
   background: var(--card-bg, var(--surface));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--card-shadow, none);
