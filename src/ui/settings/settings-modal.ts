@@ -60,7 +60,6 @@ export function createSettingsModal(store: Store): SettingsModal {
           <!-- Section 1: Tab Open Behavior -->
           <section class="settings-section">
             <h3 class="settings-section__title">Tab Opening Behavior</h3>
-            <p class="settings-section__desc">Choose where links navigate when you click a tab card on your board.</p>
 
             <div class="settings-options" role="radiogroup" aria-label="Tab Opening Behavior">
               <button
@@ -77,7 +76,6 @@ export function createSettingsModal(store: Store): SettingsModal {
                     Open in new tab
                     <span class="settings-badge">Recommended</span>
                   </span>
-                  <span class="settings-option__desc">Opens the tab in the background without switching view. Keeps Tabularium in focus.</span>
                 </span>
               </button>
 
@@ -92,7 +90,6 @@ export function createSettingsModal(store: Store): SettingsModal {
                 <span class="settings-option__indicator"></span>
                 <span class="settings-option__content">
                   <span class="settings-option__label">Open in current tab</span>
-                  <span class="settings-option__desc">Navigates directly in this tab without keeping Tabularium open in the background.</span>
                 </span>
               </button>
             </div>
@@ -100,7 +97,6 @@ export function createSettingsModal(store: Store): SettingsModal {
           <!-- Section 2: Stashed Window Tab Opening -->
           <section class="settings-section">
             <h3 class="settings-section__title">Stashed Window Tab Opening</h3>
-            <p class="settings-section__desc">Choose where tabs from a stashed window session open when restored or clicked.</p>
 
             <div class="settings-options" role="radiogroup" aria-label="Stashed Window Tab Opening">
               <button
@@ -117,7 +113,6 @@ export function createSettingsModal(store: Store): SettingsModal {
                     Open in new tab
                     <span class="settings-badge">Default</span>
                   </span>
-                  <span class="settings-option__desc">Restores tabs as new tabs. Keeps Tabularium open in the background.</span>
                 </span>
               </button>
 
@@ -132,7 +127,6 @@ export function createSettingsModal(store: Store): SettingsModal {
                 <span class="settings-option__indicator"></span>
                 <span class="settings-option__content">
                   <span class="settings-option__label">Open in current tab</span>
-                  <span class="settings-option__desc">Navigates directly in this tab without keeping Tabularium open in the background.</span>
                 </span>
               </button>
             </div>
@@ -140,7 +134,6 @@ export function createSettingsModal(store: Store): SettingsModal {
           <!-- Section 3: Wallpaper -->
           <section class="settings-section">
             <h3 class="settings-section__title">Wallpaper</h3>
-            <p class="settings-section__desc">Customize the background of Tabularium. Only 1 image is kept to conserve memory.</p>
 
             <div class="settings-wallpaper-card">
               <div class="settings-wallpaper__preview-row">
