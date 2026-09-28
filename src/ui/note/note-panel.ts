@@ -231,20 +231,21 @@ export function createNotePanel(store: Store, onCardClick?: (url: string) => voi
   };
 
   const close = (): void => {
+    const wasActive = activeCardId;
+    activeCardId = null;
+    pendingNew = null;
     flushSave();
-    if (activeCardId) {
-      const card = store.getState().cards[activeCardId];
+    if (wasActive) {
+      const card = store.getState().cards[wasActive];
       if (card) {
         const cleanTitle = card.title.replace(HAS_DATE_PREFIX, '').trim();
         const note = (card.note ?? '').trim();
         const url = (card.url ?? '').trim();
         if ((!cleanTitle || cleanTitle === '(untitled)') && !note && !url) {
-          void store.deleteCard(activeCardId);
+          void store.deleteCard(wasActive);
         }
       }
     }
-    activeCardId = null;
-    pendingNew = null;
     pendingTitle = null;
     pendingNote = null;
     if (container) {
