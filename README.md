@@ -6,6 +6,21 @@ Instead of letting dozens of scattered tabs clutter your browser, drain system m
 
 ---
 
+<p align="center">
+  <img src="public/screenshot.png" alt="Tabularium Dashboard Screenshot" width="100%" />
+</p>
+
+---
+
+## Key Features
+
+- 🏛️ **Visual Kanban Dashboard** — Organize open tabs, tasks, and notes into flexible columns and dedicated project boards.
+- ⚡ **Fast Note & Instant Capture** — Press `Alt+N` on any webpage to quickly capture a note or task, or `Alt+S` (`Cmd+Shift+S` on macOS) to instantly stash the active tab.
+- 📝 **Dedicated Note & Task Drawer** — Write in-depth notes, view attached web links, and export directly as `.md` files.
+- 🚀 **100% Local-First & Zero Tracking** — All data is safely stored on your machine in IndexedDB. Instant load times, zero network requests, and complete privacy.
+- 🎨 **Calm Aesthetic & Custom Wallpapers** — Minimalist dark and light themes, custom wallpaper support, and smooth keyboard navigation.
+
+---
 ## Usage
 
 ### 1. Clone & Build
