@@ -9,7 +9,7 @@ import { bySortOrder } from '../db/order';
 import { DB_VERSION } from '../db/schema';
 import { formatDateTag, indexById } from '../util';
 import type { CardPatch, Repo } from '../db/repo';
-import type { Board, Card, Column, Meta, NewCard, Snapshot, TabOpenBehavior, ThemePref, WallpaperQualityMode, WindowTabItem } from '../types';
+import type { Board, Card, Column, Meta, NewCard, Snapshot, TabOpenBehavior, ThemePref, WindowTabItem } from '../types';
 export interface StoreState {
   boards: Record<string, Board>;
   columns: Record<string, Column>;
@@ -56,9 +56,8 @@ export interface Store {
   setOpenBehavior(behavior: TabOpenBehavior): Promise<void>;
   setStashedOpenBehavior(behavior: TabOpenBehavior): Promise<void>;
   setSidebarCollapsed(collapsed: boolean): Promise<void>;
-  setWallpaper(dataUrl: string, accent: string): Promise<void>;
+  setWallpaper(dataUrl: string): Promise<void>;
   removeWallpaper(): Promise<void>;
-  setWallpaperQuality(mode: WallpaperQualityMode): Promise<void>;
   exportSnapshot(): Promise<Snapshot>;
   importSnapshot(snapshot: Snapshot): Promise<void>;
 }
@@ -256,18 +255,13 @@ export function createStore(repo: Repo): Store {
       await refresh();
     },
 
-    async setWallpaper(dataUrl, accent) {
-      await repo.setMeta({ wallpaper: dataUrl, wallpaperAccent: accent });
+    async setWallpaper(dataUrl) {
+      await repo.setMeta({ wallpaper: dataUrl });
       await refresh();
     },
 
     async removeWallpaper() {
-      await repo.setMeta({ wallpaper: undefined, wallpaperAccent: undefined });
-      await refresh();
-    },
-
-    async setWallpaperQuality(mode) {
-      await repo.setMeta({ wallpaperQuality: mode });
+      await repo.setMeta({ wallpaper: undefined });
       await refresh();
     },
     exportSnapshot: () => repo.getSnapshot(),
