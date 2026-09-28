@@ -2,16 +2,13 @@
  * Theme application. Sets `data-theme` on `<html>` to drive CSS vars.
  * Only light and dark modes supported (no system mode).
  */
-import type { ThemePref } from '../types';
-
-export function applyTheme(pref: ThemePref): void {
-  const theme = pref === 'light' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', theme);
+export function applyTheme(): void {
+  document.documentElement.setAttribute('data-theme', 'dark');
 }
 
-/** Resolve the effective mode ('light' | 'dark'). */
-export function resolveEffective(pref: ThemePref): 'light' | 'dark' {
-  return pref === 'light' ? 'light' : 'dark';
+/** Resolve the effective mode (locked to 'dark'). */
+export function resolveEffective(): 'dark' {
+  return 'dark';
 }
 
 /** Reveal the body after the theme is applied (anti-FOUC). */

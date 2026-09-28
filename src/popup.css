@@ -16,35 +16,6 @@
   color-scheme: dark;
 }
 
-:root[data-theme="light"] {
-  --bg: #f8fafc;
-  --bg-gradient: radial-gradient(ellipse 90% 50% at 50% -10%, rgba(79, 70, 229, 0.05), transparent 70%),
-                 linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
-  --brand-gradient: linear-gradient(135deg, #0f172a 40%, #4338ca 100%);
-  --surface: #ffffff;
-  --surface-2: #e2e8f0;
-  --border: #cbd5e1;
-  --text: #0f172a;
-  --text-muted: #64748b;
-  --accent: #4f46e5;
-  --note-accent: #d97706;
-  color-scheme: light;
-}
-
-:root[data-theme="dark"] {
-  --bg: #131316;
-  --bg-gradient: radial-gradient(ellipse 90% 55% at 50% -10%, rgba(146, 142, 232, 0.08), transparent 70%),
-                 linear-gradient(180deg, #17171c 0%, #121215 100%);
-  --brand-gradient: linear-gradient(135deg, #ffffff 40%, #c5c2ff 100%);
-  --surface: #1e1e22;
-  --surface-2: #26262c;
-  --border: rgba(255, 255, 255, 0.08);
-  --text: #ececee;
-  --text-muted: #9a9aa3;
-  --accent: #928ee8;
-  --note-accent: #f59e0b;
-  color-scheme: dark;
-}
 
 * {
   box-sizing: border-box;

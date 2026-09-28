@@ -14,9 +14,8 @@ import { createSettingsModal } from './ui/settings/settings-modal';
 import { createSidebarView } from './ui/sidebar/sidebar-view';
 import { createWindowModal } from './ui/window/window-modal';
 import { createEmojiPickerModal } from './ui/picker/emoji-picker-modal';
-import { iconGear, iconMoon, iconSun } from './ui/icons';
+import { iconGear } from './ui/icons';
 import { setupDnD } from './dnd';
-import type { ThemePref } from './types';
 
 // Global error surface: show a non-blocking toast for unhandled async errors.
 window.addEventListener('unhandledrejection', (event) => {
@@ -28,25 +27,16 @@ const LAYOUT = `
   <div class="layout">
     <header class="brand header">
       <div class="brand__logo-wrap">
-        <img src="/tabularium.png" alt="Tabularium" class="brand__logo-img" height="38" />
-      </div>
-      <div class="brand__actions">
-        <button id="theme-toggle" class="icon-btn theme-toggle" title="Toggle theme"></button>
-        <button id="settings-btn" class="icon-btn settings-trigger" title="Settings">${iconGear}</button>
+        <img src="/tabularium.png" alt="Tabularium" class="brand__logo-img" height="76" />
       </div>
     </header>
     <aside class="sidebar" id="sidebar-root"></aside>
     <main class="board" id="board-root"></main>
+    <button id="settings-btn" class="settings-trigger-floating" title="Settings">${iconGear}</button>
   </div>
 `;
 
-const CACHE_THEME_KEY = 'tabularium_theme';
 const CACHE_SIDEBAR_KEY = 'tabularium_sidebar';
-
-function getCachedTheme(): ThemePref {
-  const cached = localStorage.getItem(CACHE_THEME_KEY);
-  return cached === 'light' ? 'light' : 'dark';
-}
 
 function getCachedSidebar(): boolean {
   return localStorage.getItem(CACHE_SIDEBAR_KEY) === '1';
@@ -57,9 +47,7 @@ async function bootstrap(): Promise<void> {
   if (!app) return;
 
   // ── 1. Synchronous Instant Shell Render (0ms critical path) ──────────────
-  // Render shell, apply cached theme, restore sidebar rail, reveal body immediately.
-  const initialTheme = getCachedTheme();
-  applyTheme(initialTheme);
+  applyTheme();
   try {
     const cachedWallpaper = localStorage.getItem('tabularium_wallpaper');
     if (cachedWallpaper) {
@@ -106,19 +94,12 @@ async function bootstrap(): Promise<void> {
     // Ignore localStorage quota errors
   }
 
-  // Reconcile and cache theme & sidebar state from IndexedDB
-  const currentTheme = store.getState().meta.theme;
-  applyTheme(currentTheme);
-  localStorage.setItem(CACHE_THEME_KEY, currentTheme);
-
+  applyTheme();
   const currentSidebar = Boolean(store.getState().meta.sidebarCollapsed);
   layout?.classList.toggle('layout--sidebar-collapsed', currentSidebar);
   localStorage.setItem(CACHE_SIDEBAR_KEY, currentSidebar ? '1' : '0');
-
   store.subscribe(() => {
     const m = store.getState().meta;
-    const nextTheme = m.theme;
-    localStorage.setItem(CACHE_THEME_KEY, nextTheme);
     const nextSidebar = Boolean(m.sidebarCollapsed);
     localStorage.setItem(CACHE_SIDEBAR_KEY, nextSidebar ? '1' : '0');
     applyWallpaper(m.wallpaper);
@@ -197,30 +178,6 @@ async function bootstrap(): Promise<void> {
     store.subscribe(updateLayout);
   }
 
-  // Theme toggle
-  const toggle = app.querySelector<HTMLButtonElement>('#theme-toggle');
-  if (toggle) {
-    const updateToggle = (): void => {
-      const theme = store.getState().meta.theme;
-      if (theme === 'light') {
-        toggle.innerHTML = iconMoon;
-        toggle.title = 'Switch to dark mode';
-      } else {
-        toggle.innerHTML = iconSun;
-        toggle.title = 'Switch to light mode';
-      }
-    };
-    toggle.addEventListener('click', () => {
-      const current = store.getState().meta.theme;
-      const next: ThemePref = current === 'light' ? 'dark' : 'light';
-      void store.setTheme(next);
-    });
-    store.subscribe(() => {
-      applyTheme(store.getState().meta.theme);
-      updateToggle();
-    });
-    updateToggle();
-  }
 
   // Settings modal
   const settingsModal = createSettingsModal(store);
