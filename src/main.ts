@@ -13,6 +13,7 @@ import { createNotePanel } from './ui/note/note-panel';
 import { createSettingsModal } from './ui/settings/settings-modal';
 import { createSidebarView } from './ui/sidebar/sidebar-view';
 import { createWindowModal } from './ui/window/window-modal';
+import { createEmojiPickerModal } from './ui/picker/emoji-picker-modal';
 import { iconGear, iconMoon, iconSun } from './ui/icons';
 import { setupDnD } from './dnd';
 import type { ThemePref } from './types';
@@ -106,12 +107,17 @@ async function bootstrap(): Promise<void> {
   const windowModal = createWindowModal(store, tabAdapter);
   windowModal.mount(app);
 
+  // Emoji picker modal (centered floating secondary panel)
+  const emojiPickerModal = createEmojiPickerModal(store);
+  emojiPickerModal.mount(app);
+
   const boardRoot = app.querySelector<HTMLElement>('#board-root');
   if (boardRoot) {
     createBoardView(store, {
       notePanel,
       cardEditModal,
       windowModal,
+      emojiPickerModal,
       tabAdapter,
       onCardClick: tabAdapter
         ? async (url) => {
