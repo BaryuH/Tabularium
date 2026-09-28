@@ -19,31 +19,18 @@ export function revealBody(): void {
   document.body.style.opacity = '1';
 }
 
-/** Apply or remove custom wallpaper and dynamic accent color. */
-export function applyWallpaper(wallpaper?: string, accent?: string): void {
+/** Apply or remove custom wallpaper. */
+export function applyWallpaper(wallpaper?: string): void {
   const root = document.documentElement;
   if (wallpaper === 'none') {
     document.body.classList.add('has-no-wallpaper');
     root.style.removeProperty('--wallpaper-url');
-    root.style.removeProperty('--accent');
-    root.style.removeProperty('--brand-gradient');
   } else if (wallpaper) {
     document.body.classList.remove('has-no-wallpaper');
     root.style.setProperty('--wallpaper-url', `url("${wallpaper}")`);
-    if (accent) {
-      root.style.setProperty('--accent', accent);
-      root.style.setProperty('--brand-gradient', `linear-gradient(135deg, #ffffff 30%, ${accent} 100%)`);
-    }
   } else {
     // Default: use tabularium.jpg as default background
     document.body.classList.remove('has-no-wallpaper');
     root.style.removeProperty('--wallpaper-url');
-    if (accent) {
-      root.style.setProperty('--accent', accent);
-      root.style.setProperty('--brand-gradient', `linear-gradient(135deg, #ffffff 30%, ${accent} 100%)`);
-    } else {
-      root.style.removeProperty('--accent');
-      root.style.removeProperty('--brand-gradient');
-    }
   }
 }

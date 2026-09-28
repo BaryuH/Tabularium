@@ -62,9 +62,8 @@ async function bootstrap(): Promise<void> {
   applyTheme(initialTheme);
   try {
     const cachedWallpaper = localStorage.getItem('tabularium_wallpaper');
-    const cachedAccent = localStorage.getItem('tabularium_wallpaper_accent');
     if (cachedWallpaper) {
-      applyWallpaper(cachedWallpaper, cachedAccent ?? undefined);
+      applyWallpaper(cachedWallpaper);
     }
   } catch {
     // Ignore localStorage read errors
@@ -94,16 +93,14 @@ async function bootstrap(): Promise<void> {
   const db = await openDatabase();
   const store = createStore(createRepo(db));
   await store.hydrate();
-  // Reconcile and apply wallpaper & accent
+  // Reconcile and apply wallpaper
   const initialMeta = store.getState().meta;
-  applyWallpaper(initialMeta.wallpaper, initialMeta.wallpaperAccent);
+  applyWallpaper(initialMeta.wallpaper);
   try {
     if (initialMeta.wallpaper) {
       localStorage.setItem('tabularium_wallpaper', initialMeta.wallpaper);
-      if (initialMeta.wallpaperAccent) localStorage.setItem('tabularium_wallpaper_accent', initialMeta.wallpaperAccent);
     } else {
       localStorage.removeItem('tabularium_wallpaper');
-      localStorage.removeItem('tabularium_wallpaper_accent');
     }
   } catch {
     // Ignore localStorage quota errors
@@ -124,14 +121,12 @@ async function bootstrap(): Promise<void> {
     localStorage.setItem(CACHE_THEME_KEY, nextTheme);
     const nextSidebar = Boolean(m.sidebarCollapsed);
     localStorage.setItem(CACHE_SIDEBAR_KEY, nextSidebar ? '1' : '0');
-    applyWallpaper(m.wallpaper, m.wallpaperAccent);
+    applyWallpaper(m.wallpaper);
     try {
       if (m.wallpaper) {
         localStorage.setItem('tabularium_wallpaper', m.wallpaper);
-        if (m.wallpaperAccent) localStorage.setItem('tabularium_wallpaper_accent', m.wallpaperAccent);
       } else {
         localStorage.removeItem('tabularium_wallpaper');
-        localStorage.removeItem('tabularium_wallpaper_accent');
       }
     } catch {
       // Ignore localStorage quota errors

@@ -5,7 +5,8 @@
                  linear-gradient(180deg, #17171c 0%, #121215 100%);
   --topbar-bg: linear-gradient(180deg, rgba(30, 30, 36, 0.98) 0%, rgba(22, 22, 27, 0.98) 100%);
   --sidebar-bg: linear-gradient(180deg, rgba(26, 26, 32, 0.98) 0%, rgba(19, 19, 23, 0.98) 100%);
-  --column-bg: linear-gradient(180deg, rgba(29, 29, 35, 0.85) 0%, rgba(22, 22, 27, 0.92) 100%);
+  --column-bg: linear-gradient(180deg, rgba(26, 26, 33, 0.65) 0%, rgba(18, 18, 23, 0.75) 100%);
+  --column-border: rgba(255, 255, 255, 0.1);
   --brand-gradient: linear-gradient(135deg, #ffffff 40%, #c5c2ff 100%);
   --surface: #1e1e22;
   --surface-2: #26262c;
@@ -37,7 +38,8 @@
                  linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
   --topbar-bg: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
   --sidebar-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 248, 251, 0.98) 100%);
-  --column-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  --column-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(246, 248, 252, 0.85) 100%);
+  --column-border: rgba(203, 213, 225, 0.7);
   --brand-gradient: linear-gradient(135deg, #0f172a 40%, #4338ca 100%);
   --surface: #ffffff;
   --surface-2: #e2e8f0;
@@ -61,8 +63,8 @@
                  radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.035), transparent 45%),
                  linear-gradient(180deg, #17171c 0%, #121215 100%);
   --topbar-bg: linear-gradient(180deg, rgba(30, 30, 36, 0.98) 0%, rgba(22, 22, 27, 0.98) 100%);
-  --sidebar-bg: linear-gradient(180deg, rgba(26, 26, 32, 0.98) 0%, rgba(19, 19, 23, 0.98) 100%);
-  --column-bg: linear-gradient(180deg, rgba(29, 29, 35, 0.85) 0%, rgba(22, 22, 27, 0.92) 100%);
+  --column-bg: linear-gradient(180deg, rgba(26, 26, 33, 0.65) 0%, rgba(18, 18, 23, 0.75) 100%);
+  --column-border: rgba(255, 255, 255, 0.1);
   --brand-gradient: linear-gradient(135deg, #ffffff 40%, #c5c2ff 100%);
   --surface: #1e1e22;
   --surface-2: #26262c;
@@ -150,8 +152,8 @@ body.has-no-wallpaper {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 24px;
-  min-height: 52px;
+  padding: 4px 24px;
+  min-height: 64px;
   background: var(--topbar-bg, var(--surface));
   border-bottom: 1px solid var(--border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
@@ -168,12 +170,13 @@ body.has-no-wallpaper {
 .brand__logo-wrap {
   display: flex;
   align-items: center;
+  height: 60px;
 }
 
 .brand__logo-img {
-  height: 38px;
+  height: 76px;
   width: auto;
-  max-width: 200px;
+  max-width: 340px;
   object-fit: contain;
   display: block;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
@@ -653,10 +656,12 @@ body.has-no-wallpaper {
   display: flex;
   flex-direction: column;
   max-height: 100%;
-  background: var(--column-bg, var(--surface));
-  border: 1px solid var(--border);
+  background: var(--column-bg);
+  backdrop-filter: blur(16px) saturate(135%);
+  -webkit-backdrop-filter: blur(16px) saturate(135%);
+  border: 1px solid var(--column-border, var(--border));
   border-radius: var(--radius);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   contain: layout style;
   content-visibility: auto;
   contain-intrinsic-size: var(--column-width) 500px;
@@ -671,13 +676,13 @@ body.has-no-wallpaper {
   gap: 8px;
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.03);
   border-top-left-radius: var(--radius);
   border-top-right-radius: var(--radius);
 }
 
 :root[data-theme="light"] .column__head {
-  background: rgba(15, 23, 42, 0.015);
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .column__icon-btn {
