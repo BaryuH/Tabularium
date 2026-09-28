@@ -633,6 +633,8 @@ body {
   border-radius: var(--radius);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
   contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: var(--column-width) 500px;
   animation: col-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   transition: border-color 0.18s ease, outline 0.15s ease, background-color 0.2s ease, box-shadow 0.18s ease;
 }
