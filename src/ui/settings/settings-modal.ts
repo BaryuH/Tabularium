@@ -6,11 +6,13 @@
  * 2. Export full IndexedDB data to JSON backup file
  * 3. Import & restore full data from JSON backup file with validation & confirmation
  */
-import { iconDownload, iconGear, iconUpload, iconX } from '../icons';
+import { iconDownload, iconGear, iconTrash, iconUpload, iconX } from '../icons';
 import { showToast } from '../toast';
+import { escapeHtml } from '../../util';
 import { importCsvToStore, serializeSnapshotToCsv } from '../../util/csv';
+import { processWallpaperFile } from '../../util/wallpaper';
 import type { Store } from '../../state/store';
-import type { Snapshot, TabOpenBehavior } from '../../types';
+import type { Snapshot, TabOpenBehavior, WallpaperQualityMode } from '../../types';
 
 export interface SettingsModal {
   open(): void;
@@ -40,7 +42,11 @@ export function createSettingsModal(store: Store): SettingsModal {
     const meta = store.getState().meta;
     const openBehavior: TabOpenBehavior = meta.openBehavior ?? 'new-tab';
     const stashedOpenBehavior: TabOpenBehavior = meta.stashedOpenBehavior ?? 'new-tab';
-
+    const wallpaperQuality: WallpaperQualityMode = meta.wallpaperQuality ?? 'lightweight';
+    const hasCustomWallpaper = Boolean(meta.wallpaper);
+    const wallpaperPreviewSrc = meta.wallpaper || '/tabularium.jpg';
+    const wallpaperTitle = hasCustomWallpaper ? 'Custom Wallpaper Active' : 'Default Architecture (tabularium.jpg)';
+    const activeAccent = meta.wallpaperAccent || (meta.theme === 'light' ? '#4f46e5' : '#928ee8');
     container.innerHTML = `
       <div class="settings-modal__backdrop" data-action="close-settings"></div>
       <div class="settings-modal" role="dialog" aria-modal="true" aria-label="Settings">
@@ -131,6 +137,79 @@ export function createSettingsModal(store: Store): SettingsModal {
                   <span class="settings-option__desc">Navigates directly in this tab without keeping Tabularium open in the background.</span>
                 </span>
               </button>
+            </div>
+          </section>
+          <!-- Section 3: Wallpaper & Dynamic Theme -->
+          <section class="settings-section">
+            <h3 class="settings-section__title">Wallpaper & Dynamic Theme</h3>
+            <p class="settings-section__desc">Add a custom wallpaper. The UI theme and accent color automatically adapt to its dominant tone.</p>
+
+            <!-- Quality Mode Selector (Lightweight vs 4K Ultra Trade-off) -->
+            <div class="settings-options" role="radiogroup" aria-label="Wallpaper Quality Mode">
+              <button
+                type="button"
+                class="settings-option ${wallpaperQuality === 'lightweight' ? 'settings-option--active' : ''}"
+                data-action="set-wallpaper-quality"
+                data-value="lightweight"
+                role="radio"
+                aria-checked="${wallpaperQuality === 'lightweight'}"
+              >
+                <span class="settings-option__indicator"></span>
+                <span class="settings-option__content">
+                  <span class="settings-option__label">
+                    ⚡ Lightweight (Optimized)
+                    <span class="settings-badge">Default</span>
+                  </span>
+                  <span class="settings-option__desc">Downsamples to ~1080p (~100-200KB) for instant 0ms tab load and minimal memory.</span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="settings-option ${wallpaperQuality === 'original' ? 'settings-option--active' : ''}"
+                data-action="set-wallpaper-quality"
+                data-value="original"
+                role="radio"
+                aria-checked="${wallpaperQuality === 'original'}"
+              >
+                <span class="settings-option__indicator"></span>
+                <span class="settings-option__content">
+                  <span class="settings-option__label">
+                    💎 4K Ultra (Original Quality)
+                  </span>
+                  <span class="settings-option__desc">Trade-off mode: allows images up to 4K (3840×2160) preserving full sharpness.</span>
+                </span>
+              </button>
+            </div>
+
+            <!-- Active Wallpaper Card -->
+            <div class="settings-wallpaper-card">
+              <div class="settings-wallpaper__preview-row">
+                <img
+                  class="settings-wallpaper__thumb"
+                  src="${escapeHtml(wallpaperPreviewSrc)}"
+                  alt="Wallpaper thumbnail"
+                />
+                <div class="settings-wallpaper__meta">
+                  <span class="settings-wallpaper__title">${escapeHtml(wallpaperTitle)}</span>
+                  <div class="settings-wallpaper__sub">
+                    <span class="settings-wallpaper__swatch" style="background: ${escapeHtml(activeAccent)};"></span>
+                    <span>Theme Accent: <strong>${escapeHtml(activeAccent)}</strong></span>
+                  </div>
+                </div>
+              </div>
+              <div class="settings-wallpaper__actions">
+                <button type="button" class="settings-btn" data-action="trigger-wallpaper-upload" title="Upload local image">
+                  ${iconUpload}
+                  <span>${hasCustomWallpaper ? 'Change Wallpaper' : 'Upload Wallpaper'}</span>
+                </button>
+                ${hasCustomWallpaper ? `
+                <button type="button" class="settings-btn" data-action="remove-wallpaper" title="Reset to default background">
+                  ${iconTrash}
+                  <span>Reset to Default</span>
+                </button>` : ''}
+                <input type="file" class="settings-wallpaper-input" accept="image/*" style="display: none;" />
+              </div>
             </div>
           </section>
 
@@ -246,6 +325,27 @@ export function createSettingsModal(store: Store): SettingsModal {
         }
       });
     }
+    // Wire Wallpaper file input
+    const wallpaperInput = container.querySelector<HTMLInputElement>('.settings-wallpaper-input');
+    if (wallpaperInput) {
+      wallpaperInput.addEventListener('change', async () => {
+        const file = wallpaperInput.files?.[0];
+        if (!file) return;
+
+        showToast('Processing wallpaper & extracting colors...');
+        try {
+          const quality = store.getState().meta.wallpaperQuality ?? 'lightweight';
+          const { dataUrl, accentColor, sizeKb } = await processWallpaperFile(file, quality);
+          await store.setWallpaper(dataUrl, accentColor);
+          showToast(`Wallpaper set (${sizeKb} KB) · Theme adapted`);
+          renderContent();
+        } catch (err) {
+          showToast(err instanceof Error ? err.message : 'Failed to process wallpaper');
+        } finally {
+          wallpaperInput.value = '';
+        }
+      });
+    }
   };
 
   const open = (): void => {
@@ -308,6 +408,37 @@ export function createSettingsModal(store: Store): SettingsModal {
           renderContent();
         });
       }
+      return;
+    }
+    // Wallpaper Quality Mode button click
+    const qualityBtn = target.closest<HTMLElement>('[data-action="set-wallpaper-quality"]');
+    if (qualityBtn) {
+      event.preventDefault();
+      const val = qualityBtn.dataset.value as WallpaperQualityMode;
+      if (val) {
+        void store.setWallpaperQuality(val).then(() => {
+          showToast(`Wallpaper quality mode: ${val === 'original' ? '4K Ultra (Original)' : 'Lightweight (Optimized)'}`);
+          renderContent();
+        });
+      }
+      return;
+    }
+
+    // Trigger Wallpaper Upload
+    if (target.closest('[data-action="trigger-wallpaper-upload"]')) {
+      event.preventDefault();
+      const wallpaperInput = container?.querySelector<HTMLInputElement>('.settings-wallpaper-input');
+      wallpaperInput?.click();
+      return;
+    }
+
+    // Remove Wallpaper
+    if (target.closest('[data-action="remove-wallpaper"]')) {
+      event.preventDefault();
+      void store.removeWallpaper().then(() => {
+        showToast('Wallpaper reset to default');
+        renderContent();
+      });
       return;
     }
 
