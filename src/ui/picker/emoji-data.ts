@@ -1,0 +1,247 @@
+export interface EmojiCategory {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+export interface EmojiItem {
+  emoji: string;
+  name: string;
+  keywords: string;
+  category: string;
+}
+
+export const EMOJI_CATEGORIES: EmojiCategory[] = [
+  { id: 'all', name: 'All', icon: '⭐' },
+  { id: 'work', name: 'Work & Tech', icon: '💼' },
+  { id: 'tasks', name: 'Tasks & Flow', icon: '🎯' },
+  { id: 'study', name: 'Study & Notes', icon: '📚' },
+  { id: 'smileys', name: 'Smileys & Vibe', icon: '😀' },
+  { id: 'nature', name: 'Nature & Chill', icon: '🌿' },
+  { id: 'creative', name: 'Creative & Fun', icon: '🎨' },
+];
+
+export const EMOJI_DATASET: EmojiItem[] = [
+  // ── Work & Tech (💼) ──────────────────────────────────────────
+  { emoji: '📁', name: 'folder', keywords: 'directory files folder project organize docs', category: 'work' },
+  { emoji: '📂', name: 'open folder', keywords: 'files open directory documents archive', category: 'work' },
+  { emoji: '🗂️', name: 'card index', keywords: 'divider tabs index files catalog', category: 'work' },
+  { emoji: '📋', name: 'clipboard', keywords: 'list board tasks clipboard memo plan', category: 'work' },
+  { emoji: '📦', name: 'package', keywords: 'box delivery package stash storage archive backlog', category: 'work' },
+  { emoji: '🏛️', name: 'archive', keywords: 'tabularium museum monument pillar temple history records', category: 'work' },
+  { emoji: '💼', name: 'briefcase', keywords: 'work business briefcase bag job career', category: 'work' },
+  { emoji: '🏢', name: 'office', keywords: 'building company enterprise corporate work', category: 'work' },
+  { emoji: '🚀', name: 'rocket', keywords: 'launch startup speed fast sprint fly', category: 'work' },
+  { emoji: '⚡', name: 'lightning', keywords: 'quick energy fast speed bolt power high', category: 'work' },
+  { emoji: '🛠️', name: 'tools', keywords: 'hammer wrench dev settings fix repair build', category: 'work' },
+  { emoji: '💻', name: 'laptop', keywords: 'computer dev tech coding macbook pc screen', category: 'work' },
+  { emoji: '🖥️', name: 'desktop', keywords: 'monitor screen pc workstation display', category: 'work' },
+  { emoji: '⌨️', name: 'keyboard', keywords: 'typing key shortcut input dev tech', category: 'work' },
+  { emoji: '🖱️', name: 'mouse', keywords: 'click pointer trackpad scroll hardware', category: 'work' },
+  { emoji: '💾', name: 'floppy disk', keywords: 'save backup disk storage memory file', category: 'work' },
+  { emoji: '⚙️', name: 'gear', keywords: 'settings configure options preferences system admin', category: 'work' },
+  { emoji: '🔧', name: 'wrench', keywords: 'tool mechanic repair settings maintenance fix', category: 'work' },
+  { emoji: '🌐', name: 'web', keywords: 'internet global network world online browser link', category: 'work' },
+  { emoji: '🔒', name: 'locked', keywords: 'secure privacy security password closed safe', category: 'work' },
+  { emoji: '🔓', name: 'unlocked', keywords: 'open access permit public free', category: 'work' },
+  { emoji: '🔑', name: 'key', keywords: 'access secret unlock login pass auth key', category: 'work' },
+  { emoji: '🔮', name: 'crystal ball', keywords: 'future predict vision ai magic forecast', category: 'work' },
+  { emoji: '📊', name: 'chart bar', keywords: 'analytics stats data graph metrics report', category: 'work' },
+  { emoji: '📈', name: 'chart up', keywords: 'growth increase profit stock trending rise', category: 'work' },
+  { emoji: '📉', name: 'chart down', keywords: 'decrease drop loss fall metrics', category: 'work' },
+  { emoji: '🗄️', name: 'file cabinet', keywords: 'archive database storage filing records drawer', category: 'work' },
+  { emoji: '📱', name: 'mobile', keywords: 'iphone phone android smartphone mobile app', category: 'work' },
+  { emoji: '📡', name: 'satellite', keywords: 'signal antenna broadcast wireless network', category: 'work' },
+  { emoji: '🛡️', name: 'shield', keywords: 'protect security guard defense safety armor', category: 'work' },
+  { emoji: '🧱', name: 'brick', keywords: 'build foundation component modular solid wall', category: 'work' },
+  { emoji: '🪙', name: 'coin', keywords: 'money token payment finance gold currency', category: 'work' },
+
+  // ── Tasks & Status (🎯) ───────────────────────────────────────
+  { emoji: '✅', name: 'check mark', keywords: 'done finished complete success pass check ok yes', category: 'tasks' },
+  { emoji: '☑️', name: 'ballot box', keywords: 'checkbox check todo done mark selected', category: 'tasks' },
+  { emoji: '✔️', name: 'check', keywords: 'check mark verified true correct ok', category: 'tasks' },
+  { emoji: '❌', name: 'cross', keywords: 'no cancel close remove wrong reject stop', category: 'tasks' },
+  { emoji: '🚫', name: 'prohibited', keywords: 'blocked banned stop no forbid denied', category: 'tasks' },
+  { emoji: '⏳', name: 'hourglass flowing', keywords: 'waiting in progress pending loading timer time', category: 'tasks' },
+  { emoji: '⌛', name: 'hourglass done', keywords: 'timer clock time deadline limit expire', category: 'tasks' },
+  { emoji: '⏱️', name: 'stopwatch', keywords: 'timer sprint quick speed fast time measure', category: 'tasks' },
+  { emoji: '🎯', name: 'target', keywords: 'goal objective focus aim target direct hit', category: 'tasks' },
+  { emoji: '📌', name: 'pin', keywords: 'pinned bookmark important sticky keep attach', category: 'tasks' },
+  { emoji: '📍', name: 'round pin', keywords: 'location spot place milestone marker map', category: 'tasks' },
+  { emoji: '🚩', name: 'triangular flag', keywords: 'flag mark priority warning milestone checkpoint', category: 'tasks' },
+  { emoji: '🏁', name: 'checkered flag', keywords: 'finish complete race done win milestone final', category: 'tasks' },
+  { emoji: '🚧', name: 'construction', keywords: 'wip working progress build under construction draft', category: 'tasks' },
+  { emoji: '🔄', name: 'repeat cycle', keywords: 'sync loop refresh reload cycle repeat iteration', category: 'tasks' },
+  { emoji: '⏸️', name: 'pause', keywords: 'hold wait paused suspended stop stay', category: 'tasks' },
+  { emoji: '🔥', name: 'fire', keywords: 'hot urgent priority trending fire burn popular', category: 'tasks' },
+  { emoji: '⭐', name: 'star', keywords: 'favorite bookmark starred highlight priority rating', category: 'tasks' },
+  { emoji: '🌟', name: 'glowing star', keywords: 'sparkle featured special best shiny premium', category: 'tasks' },
+  { emoji: '✨', name: 'sparkles', keywords: 'magic new clean shine sparkle polished ai', category: 'tasks' },
+  { emoji: '🚨', name: 'alert siren', keywords: 'urgent emergency danger bug error alert critical', category: 'tasks' },
+  { emoji: '💎', name: 'gem', keywords: 'value diamond premium precious quality treasure', category: 'tasks' },
+  { emoji: '🏆', name: 'trophy', keywords: 'winner award prize champion success celebrate', category: 'tasks' },
+  { emoji: '🥇', name: '1st place', keywords: 'gold medal top best first winner rank', category: 'tasks' },
+  { emoji: '🥈', name: '2nd place', keywords: 'silver medal second runner rank', category: 'tasks' },
+  { emoji: '🥉', name: '3rd place', keywords: 'bronze medal third rank place', category: 'tasks' },
+  { emoji: '🏷️', name: 'label', keywords: 'tag category label meta name classify', category: 'tasks' },
+  { emoji: '🔔', name: 'bell', keywords: 'notification alert notice ring chime sound', category: 'tasks' },
+  { emoji: '💡', name: 'light bulb', keywords: 'idea tip eureka smart thought brainstorm insight', category: 'tasks' },
+  { emoji: '❓', name: 'question', keywords: 'faq question help doubt unknown inquire', category: 'tasks' },
+  { emoji: '❗️', name: 'exclamation', keywords: 'important attention warn note priority notice', category: 'tasks' },
+  { emoji: '💬', name: 'chat bubble', keywords: 'message comment discuss talk feedback feedback', category: 'tasks' },
+
+  // ── Study & Notes (📚) ────────────────────────────────────────
+  { emoji: '📚', name: 'books', keywords: 'library reading study education literature research stack', category: 'study' },
+  { emoji: '📖', name: 'open book', keywords: 'read study handbook manual documentation article', category: 'study' },
+  { emoji: '📕', name: 'red book', keywords: 'book reading guide manual closed', category: 'study' },
+  { emoji: '📗', name: 'green book', keywords: 'book study journal guide log', category: 'study' },
+  { emoji: '📘', name: 'blue book', keywords: 'notebook book manual documentation', category: 'study' },
+  { emoji: '📙', name: 'orange book', keywords: 'book textbook manual guide', category: 'study' },
+  { emoji: '🔬', name: 'microscope', keywords: 'science lab research investigate study inspect examine', category: 'study' },
+  { emoji: '🧪', name: 'test tube', keywords: 'chemistry experiment lab science test formula', category: 'study' },
+  { emoji: '🧠', name: 'brain', keywords: 'intellect thinking deep work memory smart logic mental', category: 'study' },
+  { emoji: '🎓', name: 'grad cap', keywords: 'education university college learn school degree graduate', category: 'study' },
+  { emoji: '📜', name: 'scroll', keywords: 'document treaty ancient history paper certificate parchment', category: 'study' },
+  { emoji: '📝', name: 'memo', keywords: 'note writing memo paper draft compose review', category: 'study' },
+  { emoji: '✏️', name: 'pencil', keywords: 'write draw edit draft sketch compose', category: 'study' },
+  { emoji: '✒️', name: 'black nib', keywords: 'pen ink fountain signature calligraphy write', category: 'study' },
+  { emoji: '🖋️', name: 'fountain pen', keywords: 'fountain pen write contract sign formal elegant', category: 'study' },
+  { emoji: '🔍', name: 'magnifier left', keywords: 'search find investigate explore research query', category: 'study' },
+  { emoji: '🔎', name: 'magnifier right', keywords: 'search inspect detail investigate zoom lookup', category: 'study' },
+  { emoji: '📰', name: 'newspaper', keywords: 'news press media daily article paper report', category: 'study' },
+  { emoji: '🗞️', name: 'rolled newspaper', keywords: 'news press release article paper media', category: 'study' },
+  { emoji: '📑', name: 'page bookmarks', keywords: 'bookmark tabs document pages reference tags', category: 'study' },
+  { emoji: '🔖', name: 'bookmark', keywords: 'save bookmark mark place read later tag', category: 'study' },
+  { emoji: '🗒️', name: 'spiral notepad', keywords: 'pad notes pad quick thoughts draft memo', category: 'study' },
+  { emoji: '🗓️', name: 'spiral calendar', keywords: 'schedule date plan event appointment reminder', category: 'study' },
+  { emoji: '📅', name: 'calendar', keywords: 'date month planner event schedule day', category: 'study' },
+  { emoji: '📐', name: 'triangular ruler', keywords: 'measure architect design math angle draw', category: 'study' },
+  { emoji: '📏', name: 'straight ruler', keywords: 'measure length scale size rule straight', category: 'study' },
+  { emoji: '📎', name: 'paperclip', keywords: 'attach attachment clip link file include', category: 'study' },
+  { emoji: '🖇️', name: 'linked paperclips', keywords: 'connect attachments references linked files', category: 'study' },
+  { emoji: '💭', name: 'thought bubble', keywords: 'thinking ponder dream imagine wonder', category: 'study' },
+  { emoji: '🔭', name: 'telescope', keywords: 'astronomy space explore look observe distant vision', category: 'study' },
+  { emoji: '🧭', name: 'compass', keywords: 'direction guide navigate orient explore journey', category: 'study' },
+  { emoji: '🗺️', name: 'map', keywords: 'roadmap geography location trip navigate plan', category: 'study' },
+
+  // ── Smileys & Vibe (😀) ───────────────────────────────────────
+  { emoji: '😀', name: 'grinning face', keywords: 'smile happy joy grin friendly positive', category: 'smileys' },
+  { emoji: '😃', name: 'smiley', keywords: 'happy joy smile cheerful beam', category: 'smileys' },
+  { emoji: '😄', name: 'smile eyes', keywords: 'laugh joyful happy laugh cheerful', category: 'smileys' },
+  { emoji: '😁', name: 'beaming face', keywords: 'teeth grin excited proud smile', category: 'smileys' },
+  { emoji: '😆', name: 'grinning squint', keywords: 'laugh lol haha funny joke chuckle', category: 'smileys' },
+  { emoji: '😅', name: 'sweat smile', keywords: 'relief phew close nervous awkward laugh', category: 'smileys' },
+  { emoji: '😂', name: 'joy tears', keywords: 'laugh crying funny lol hilarious tears', category: 'smileys' },
+  { emoji: '🤣', name: 'rofl', keywords: 'rolling floor laughing hilarious lol', category: 'smileys' },
+  { emoji: '😊', name: 'blush smile', keywords: 'warm proud humble pleasant happy pleased', category: 'smileys' },
+  { emoji: '😇', name: 'angel halo', keywords: 'innocent good saint pure sweet', category: 'smileys' },
+  { emoji: '🙂', name: 'slightly smiling', keywords: 'fine calm okay content pleasant', category: 'smileys' },
+  { emoji: '🙃', name: 'upside down', keywords: 'silly sarcastic ironic joke playful', category: 'smileys' },
+  { emoji: '😉', name: 'wink', keywords: 'winking playful hint secret humor', category: 'smileys' },
+  { emoji: '😌', name: 'relieved', keywords: 'calm peace peaceful quiet Zen relaxed phew', category: 'smileys' },
+  { emoji: '😍', name: 'heart eyes', keywords: 'love adore crush favorite awesome adore', category: 'smileys' },
+  { emoji: '🥰', name: 'hearts face', keywords: 'love affection caring sweet warmth', category: 'smileys' },
+  { emoji: '😎', name: 'sunglasses', keywords: 'cool stylish confident slick boss great', category: 'smileys' },
+  { emoji: '🤓', name: 'nerd', keywords: 'geek code smart books glasses study dev', category: 'smileys' },
+  { emoji: '🧐', name: 'monocle', keywords: 'inspect examine curious skeptic evaluate fancy', category: 'smileys' },
+  { emoji: '🤔', name: 'thinking', keywords: 'ponder wonder consider hmm thoughtful guess', category: 'smileys' },
+  { emoji: '🤫', name: 'shushing', keywords: 'quiet secret silent hush whisper shh', category: 'smileys' },
+  { emoji: '🤭', name: 'hand over mouth', keywords: 'giggle oops sneaky secret laugh', category: 'smileys' },
+  { emoji: '🤗', name: 'hugging face', keywords: 'hug welcome friendly open support embrace', category: 'smileys' },
+  { emoji: '🤩', name: 'star struck', keywords: 'wow amazing impressed star excited fabulous', category: 'smileys' },
+  { emoji: '🥳', name: 'partying', keywords: 'celebrate party festive cheers birthday win', category: 'smileys' },
+  { emoji: '😏', name: 'smirk', keywords: 'smug knowing cheeky clever sly', category: 'smileys' },
+  { emoji: '😬', name: 'grimace', keywords: 'eek awkward nervous tense cringe', category: 'smileys' },
+  { emoji: '😴', name: 'sleeping', keywords: 'tired sleep rest nap zzz dream', category: 'smileys' },
+  { emoji: '🤯', name: 'mind blown', keywords: 'shocked amazed insane explosion wow mindblown', category: 'smileys' },
+  { emoji: '💪', name: 'flex biceps', keywords: 'strong power strength effort workout energy', category: 'smileys' },
+  { emoji: '🙌', name: 'raising hands', keywords: 'celebrate praise hooray high five yes', category: 'smileys' },
+  { emoji: '🤝', name: 'handshake', keywords: 'agreement deal partner cooperation mutual respect', category: 'smileys' },
+
+  // ── Nature & Chill (🌿) ───────────────────────────────────────
+  { emoji: '🌿', name: 'herb', keywords: 'plant leaf organic green calm nature zen fresh', category: 'nature' },
+  { emoji: '🌱', name: 'seedling', keywords: 'growth sprout new begin bloom plant young', category: 'nature' },
+  { emoji: '🌲', name: 'evergreen', keywords: 'tree forest pine nature outdoors wood', category: 'nature' },
+  { emoji: '🌳', name: 'deciduous tree', keywords: 'tree nature shade green park outdoors', category: 'nature' },
+  { emoji: '🌴', name: 'palm tree', keywords: 'beach tropical vacation summer island sun', category: 'nature' },
+  { emoji: '🌵', name: 'cactus', keywords: 'desert resilient dry plant succulent prick', category: 'nature' },
+  { emoji: '🌾', name: 'sheaf of rice', keywords: 'harvest grain agriculture field nature wheat', category: 'nature' },
+  { emoji: '🍀', name: 'four leaf clover', keywords: 'lucky luck irish fortune charm green', category: 'nature' },
+  { emoji: '🌸', name: 'cherry blossom', keywords: 'flower sakura pink blossom spring beauty', category: 'nature' },
+  { emoji: '🌺', name: 'hibiscus', keywords: 'flower tropical bloom summer botanical', category: 'nature' },
+  { emoji: '🌻', name: 'sunflower', keywords: 'sun yellow bright warm blossom summer', category: 'nature' },
+  { emoji: '🌼', name: 'blossom', keywords: 'flower yellow daisy botanical floral', category: 'nature' },
+  { emoji: '🌷', name: 'tulip', keywords: 'flower spring floral plant garden', category: 'nature' },
+  { emoji: '🌙', name: 'crescent moon', keywords: 'night dark dream sleep evening midnight lunar', category: 'nature' },
+  { emoji: '☀️', name: 'sun', keywords: 'bright light day warm sunny morning energy', category: 'nature' },
+  { emoji: '☁️', name: 'cloud', keywords: 'weather sky overcast cloud storage rain', category: 'nature' },
+  { emoji: '🌧️', name: 'cloud with rain', keywords: 'rain weather storm water sky mood', category: 'nature' },
+  { emoji: '❄️', name: 'snowflake', keywords: 'snow cold winter ice freeze chilly', category: 'nature' },
+  { emoji: '🌊', name: 'water wave', keywords: 'ocean sea surf flow tide water tsunami', category: 'nature' },
+  { emoji: '☕', name: 'coffee', keywords: 'hot drink morning cafe espresso break brew tea', category: 'nature' },
+  { emoji: '🍵', name: 'tea', keywords: 'green tea matcha hot drink calm zen herbal', category: 'nature' },
+  { emoji: '🧋', name: 'bubble tea', keywords: 'boba milk tea drink pearls beverage', category: 'nature' },
+  { emoji: '🍕', name: 'pizza', keywords: 'food cheese slice dinner lunch fast food', category: 'nature' },
+  { emoji: '🍔', name: 'burger', keywords: 'hamburger fast food lunch dinner food', category: 'nature' },
+  { emoji: '🍣', name: 'sushi', keywords: 'japanese food salmon roll dinner cuisine', category: 'nature' },
+  { emoji: '🍎', name: 'red apple', keywords: 'fruit healthy snack teacher nutrition diet', category: 'nature' },
+  { emoji: '🥑', name: 'avocado', keywords: 'healthy diet fruit vegan superfood food', category: 'nature' },
+  { emoji: '🥐', name: 'croissant', keywords: 'pastry breakfast bakery bread french', category: 'nature' },
+  { emoji: '🧘', name: 'meditation', keywords: 'yoga calm zen mindfulness stretch peace balance', category: 'nature' },
+  { emoji: '🏕️', name: 'camping', keywords: 'tent outdoors campfire wilderness nature adventure', category: 'nature' },
+  { emoji: '🏖️', name: 'beach with umbrella', keywords: 'vacation summer holiday relax ocean travel', category: 'nature' },
+  { emoji: '🏠', name: 'house', keywords: 'home residence shelter real estate base personal', category: 'nature' },
+
+  // ── Creative & Fun (🎨) ───────────────────────────────────────
+  { emoji: '🎨', name: 'artist palette', keywords: 'art design paint colors creative drawing visual', category: 'creative' },
+  { emoji: '🎬', name: 'clapper board', keywords: 'movie film cinema video action production director', category: 'creative' },
+  { emoji: '📷', name: 'camera', keywords: 'photo photography picture snapshot image lens', category: 'creative' },
+  { emoji: '📸', name: 'camera with flash', keywords: 'photo flash picture snapshot photographer', category: 'creative' },
+  { emoji: '📹', name: 'video camera', keywords: 'record video filming camcorder footage stream', category: 'creative' },
+  { emoji: '🎥', name: 'movie camera', keywords: 'cinema film movie theater Hollywood screen', category: 'creative' },
+  { emoji: '🎵', name: 'musical note', keywords: 'music song tune audio sound melody', category: 'creative' },
+  { emoji: '🎶', name: 'musical notes', keywords: 'music sound audio harmony playlist rhythm', category: 'creative' },
+  { emoji: '🎸', name: 'guitar', keywords: 'music instrument rock acoustic electric string play', category: 'creative' },
+  { emoji: '🎹', name: 'musical keyboard', keywords: 'piano music instrument keys synth harmony', category: 'creative' },
+  { emoji: '🎧', name: 'headphones', keywords: 'music audio listen podcast sound track', category: 'creative' },
+  { emoji: '🎮', name: 'video game', keywords: 'gaming controller play arcade console game', category: 'creative' },
+  { emoji: '🕹️', name: 'joystick', keywords: 'game retro arcade control play controller', category: 'creative' },
+  { emoji: '🎲', name: 'game die', keywords: 'dice roll chance random boardgame casino luck', category: 'creative' },
+  { emoji: '♟️', name: 'chess pawn', keywords: 'strategy game chess tactic move thought play', category: 'creative' },
+  { emoji: '🧩', name: 'puzzle piece', keywords: 'puzzle jigsaw logic solution problem riddle fit', category: 'creative' },
+  { emoji: '🎳', name: 'bowling', keywords: 'game sport strike pin ball play', category: 'creative' },
+  { emoji: '⚽', name: 'soccer ball', keywords: 'football sport match kick tournament team', category: 'creative' },
+  { emoji: '🏀', name: 'basketball', keywords: 'sport hoop court ball game team nba', category: 'creative' },
+  { emoji: '🎾', name: 'tennis', keywords: 'racket ball court sport match game', category: 'creative' },
+  { emoji: '🛹', name: 'skateboard', keywords: 'skate trick street board ride sport', category: 'creative' },
+  { emoji: '🚲', name: 'bicycle', keywords: 'bike ride cycle commute transport sport exercise', category: 'creative' },
+  { emoji: '✈️', name: 'airplane', keywords: 'flight travel journey trip fly transport airline', category: 'creative' },
+  { emoji: '🛸', name: 'flying saucer', keywords: 'ufo alien space sci-fi mystery futurism', category: 'creative' },
+  { emoji: '🎁', name: 'wrapped gift', keywords: 'present reward surprise birthday celebrate holiday', category: 'creative' },
+  { emoji: '🎈', name: 'balloon', keywords: 'party celebrate festive birthday float air', category: 'creative' },
+  { emoji: '🎉', name: 'party popper', keywords: 'celebrate congratulations tada success party cheer', category: 'creative' },
+  { emoji: '🎊', name: 'confetti ball', keywords: 'celebrate congratulations party event festivity', category: 'creative' },
+  { emoji: '🪄', name: 'magic wand', keywords: 'magic spell fantasy miracle wizard craft', category: 'creative' },
+  { emoji: '🎟️', name: 'admission tickets', keywords: 'ticket cinema event pass admission entry show', category: 'creative' },
+  { emoji: '🎭', name: 'performing arts', keywords: 'theater drama acting masks performance art comedy', category: 'creative' },
+  { emoji: '🎪', name: 'circus tent', keywords: 'circus show carnival festival event fair', category: 'creative' },
+];
+
+/** Fast memory-search across names and keywords */
+export function searchEmojis(query: string, categoryId = 'all'): EmojiItem[] {
+  const cleanQ = query.trim().toLowerCase();
+
+  return EMOJI_DATASET.filter((item) => {
+    if (categoryId !== 'all' && item.category !== categoryId) {
+      return false;
+    }
+    if (!cleanQ) {
+      return true;
+    }
+    return (
+      item.name.toLowerCase().includes(cleanQ) ||
+      item.keywords.toLowerCase().includes(cleanQ) ||
+      item.emoji === cleanQ
+    );
+  });
+}

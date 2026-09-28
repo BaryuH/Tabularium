@@ -16,9 +16,7 @@ import type { NotePanel } from '../note/note-panel';
 import type { CardEditModal } from '../card/card-edit-modal';
 import type { WindowModal } from '../window/window-modal';
 import type { TabAdapter } from '../../tabs/adapter';
-
-const BOARD_ICONS = ['📁', '🏛️', '💼', '🚀', '🎯', '📚', '💡', '🛠️', '🎨', '🔬', '⚡', '🌟', '📌', '☕', '🧠', '🌿'] as const;
-const COLUMN_ICONS = ['📥', '🚀', '🔬', '✅', '⚡', '📋', '📌', '💡', '📚', '🎯', '🌿', '☕', '🔥', '🛠️', '⭐', '📦'] as const;
+import { renderEmojiPickerHtml, attachEmojiPickerListeners } from '../picker/emoji-picker';
 
 type Editing =
   | { kind: 'new-board' }
@@ -128,16 +126,6 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     </div>`;
   };
 
-  const columnIconPickerHtml = (columnId: string): string => {
-    const items = COLUMN_ICONS.map(
-      (ico) => `<button class="icon-picker__item" data-action="select-column-icon" data-column-id="${columnId}" data-icon="${ico}" title="${ico}">${ico}</button>`,
-    ).join('');
-    return `<div class="icon-picker icon-picker--column" role="dialog" aria-label="Choose column icon">
-      <div class="icon-picker__grid">${items}</div>
-      <button class="icon-picker__clear" data-action="select-column-icon" data-column-id="${columnId}" data-icon="">Remove icon</button>
-    </div>`;
-  };
-
   const columnHtml = (column: Column): string => {
     const cards = store.cardsOfColumn(column.id);
     const iconBtn = `<button class="column__icon-btn" data-action="pick-column-icon" data-id="${column.id}" title="Change column icon">${column.icon ? escapeHtml(column.icon) : '📋'}</button>`;
@@ -150,7 +138,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       : `<p class="column__empty">Drop tabs here, or add a task / note below.</p>`;
     const picker =
       editing?.kind === 'pick-column-icon' && editing.columnId === column.id
-        ? columnIconPickerHtml(column.id)
+        ? renderEmojiPickerHtml({ type: 'column', id: column.id })
         : '';
     return `<section class="column" data-column-id="${column.id}">
       <header class="column__head" draggable="true">
@@ -166,15 +154,6 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     </section>`;
   };
 
-  const iconPickerHtml = (boardId: string): string => {
-    const items = BOARD_ICONS.map(
-      (ico) => `<button class="icon-picker__item" data-action="select-icon" data-board-id="${boardId}" data-icon="${ico}" title="${ico}">${ico}</button>`,
-    ).join('');
-    return `<div class="icon-picker" role="dialog" aria-label="Choose board icon">
-      <div class="icon-picker__grid">${items}</div>
-      <button class="icon-picker__clear" data-action="select-icon" data-board-id="${boardId}" data-icon="">Remove icon</button>
-    </div>`;
-  };
 
   const switcherHtml = (boards: Board[], active: Board | undefined): string => {
     const pills = boards
@@ -194,7 +173,10 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       editing?.kind === 'new-board'
         ? inputHtml('', 'Board name')
         : `<button class="icon-btn" data-action="add-board" title="New board">${iconPlus}</button>`;
-    const picker = editing?.kind === 'pick-icon' ? iconPickerHtml(editing.boardId) : '';
+    const picker =
+      editing?.kind === 'pick-icon'
+        ? renderEmojiPickerHtml({ type: 'board', id: editing.boardId })
+        : '';
     return `<div class="switcher__boards">${pills}${adder}</div>${picker}`;
   };
 
@@ -229,6 +211,17 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     root.querySelectorAll<HTMLImageElement>('img.card__fav').forEach((img) => {
       img.addEventListener('error', () => img.classList.add('card__fav--broken'));
     });
+    if (editing?.kind === 'pick-icon') {
+      const picker = root.querySelector<HTMLElement>('.emoji-picker--board');
+      if (picker) {
+        attachEmojiPickerListeners(picker, { type: 'board', id: editing.boardId });
+      }
+    } else if (editing?.kind === 'pick-column-icon') {
+      const picker = root.querySelector<HTMLElement>('.emoji-picker--column');
+      if (picker) {
+        attachEmojiPickerListeners(picker, { type: 'column', id: editing.columnId });
+      }
+    }
   };
 
   const setEditing = (next: Editing | null): void => {
@@ -301,7 +294,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
 
   const onClick = (event: MouseEvent): void => {
     const target = event.target as HTMLElement;
-    if (editing?.kind === 'pick-icon' && !target.closest('.icon-picker') && !target.closest('[data-action="pick-icon"]')) {
+    if (editing?.kind === 'pick-icon' && !target.closest('.emoji-picker') && !target.closest('.icon-picker') && !target.closest('[data-action="pick-icon"]')) {
       setEditing(null);
     }
     const actionEl = target.closest<HTMLElement>('[data-action]');
@@ -309,7 +302,7 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       handleAction(actionEl);
       return;
     }
-    if (editing?.kind === 'pick-column-icon' && !target.closest('.icon-picker') && !target.closest('[data-action="pick-column-icon"]')) {
+    if (editing?.kind === 'pick-column-icon' && !target.closest('.emoji-picker') && !target.closest('.icon-picker') && !target.closest('[data-action="pick-column-icon"]')) {
       setEditing(null);
     }
     // Card body click (no data-action ancestor)
