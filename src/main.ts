@@ -27,7 +27,9 @@ window.addEventListener('unhandledrejection', (event) => {
 const LAYOUT = `
   <div class="layout">
     <header class="brand header">
-      <span class="brand__name">Tabularium</span>
+      <div class="brand__logo-wrap">
+        <img src="/tabularium.png" alt="Tabularium" class="brand__logo-img" height="38" />
+      </div>
       <div class="brand__actions">
         <button id="theme-toggle" class="icon-btn theme-toggle" title="Toggle theme"></button>
         <button id="settings-btn" class="icon-btn settings-trigger" title="Settings">${iconGear}</button>

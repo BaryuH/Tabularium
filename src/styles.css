@@ -150,7 +150,8 @@ body.has-no-wallpaper {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 24px;
+  padding: 8px 24px;
+  min-height: 52px;
   background: var(--topbar-bg, var(--surface));
   border-bottom: 1px solid var(--border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
@@ -164,13 +165,27 @@ body.has-no-wallpaper {
   gap: 8px;
 }
 
-.brand__name {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  background: var(--brand-gradient, var(--text));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.brand__logo-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.brand__logo-img {
+  height: 38px;
+  width: auto;
+  max-width: 200px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.brand__logo-img:hover {
+  transform: scale(1.02);
+}
+
+:root[data-theme="dark"] .brand__logo-img {
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45)) brightness(1.1);
 }
 
 .sidebar {
