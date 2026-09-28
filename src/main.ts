@@ -66,6 +66,17 @@ async function bootstrap(): Promise<void> {
   if (layout && initialSidebar) {
     layout.classList.add('layout--sidebar-collapsed');
   }
+
+  // Synchronous board cache hydration (0ms frame-0 full board paint)
+  const boardRoot = app.querySelector<HTMLElement>('#board-root');
+  try {
+    const cachedBoardHtml = localStorage.getItem('tabularium_board_cache_html');
+    if (boardRoot && cachedBoardHtml) {
+      boardRoot.innerHTML = cachedBoardHtml;
+    }
+  } catch {
+    // Ignore localStorage read errors in restricted contexts
+  }
   revealBody();
 
   // ── 2. Asynchronous Store & DB Hydration (runs in background) ────────────
@@ -111,7 +122,6 @@ async function bootstrap(): Promise<void> {
   const emojiPickerModal = createEmojiPickerModal(store);
   emojiPickerModal.mount(app);
 
-  const boardRoot = app.querySelector<HTMLElement>('#board-root');
   if (boardRoot) {
     createBoardView(store, {
       notePanel,
