@@ -1370,6 +1370,23 @@ body.has-no-wallpaper {
   border-bottom: 1px solid var(--border);
 }
 
+.note-panel__head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.note-panel__export-btn {
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.note-panel__export-btn:hover {
+  color: var(--text);
+  background: var(--surface-2);
+  transform: translateY(-1px);
+}
+
 .note-panel__meta {
   display: flex;
   align-items: center;

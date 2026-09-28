@@ -8,7 +8,7 @@
  */
 import { iconDownload, iconGear, iconTrash, iconUpload, iconX } from '../icons';
 import { showToast } from '../toast';
-import { escapeHtml } from '../../util';
+import { escapeHtml, triggerDownload } from '../../util';
 import { importCsvToStore, serializeSnapshotToCsv } from '../../util/csv';
 import { processWallpaperFile } from '../../util/wallpaper';
 import type { Store } from '../../state/store';
@@ -21,17 +21,6 @@ export interface SettingsModal {
   mount(parent: HTMLElement): void;
 }
 
-function triggerDownload(content: string, filename: string, mimeType = 'application/json'): void {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
 
 export function createSettingsModal(store: Store): SettingsModal {
   let container: HTMLElement | null = null;

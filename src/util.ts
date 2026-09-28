@@ -1,3 +1,5 @@
+import type { Card } from './types';
+
 /** Shared, framework-free helpers. */
 
 /** Index a list of entities by their string `id`. */
@@ -34,4 +36,52 @@ export function formatDateTag(timestamp = Date.now()): string {
   const day = String(d.getDate()).padStart(2, '0');
   const month = String(d.getMonth() + 1).padStart(2, '0');
   return `[${day}/${month}]`;
+}
+
+/** Trigger a browser file download from a string payload. */
+export function triggerDownload(
+  content: string,
+  filename: string,
+  mimeType = 'text/plain;charset=utf-8;',
+): void {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/** Format a single card (note or task) as clean Markdown with metadata header. */
+export function formatCardAsMarkdown(card: Card): { filename: string; content: string } {
+  const cleanTitle = (card.title || '(untitled)').replace(HAS_DATE_PREFIX, '').trim();
+  const dateStr = new Date(card.savedAt || Date.now()).toISOString().split('T')[0];
+  const isTask = card.kind === 'task';
+  const isDone = Boolean(card.completedAt);
+
+  let md = `# ${card.title || 'Untitled'}\n\n`;
+  md += `> **Type:** ${isTask ? 'Task' : 'Note'}  \n`;
+  md += `> **Date:** ${dateStr}  \n`;
+  if (isTask) {
+    md += `> **Status:** ${isDone ? 'Completed' : 'In Progress'}  \n`;
+  }
+  if (card.url) {
+    md += `> **Source:** [${card.url}](${card.url})  \n`;
+  }
+  md += `\n---\n\n`;
+  md += (card.note || '').trim() || '_No content_';
+  md += '\n';
+
+  const slug = cleanTitle
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .slice(0, 50) || 'note';
+  const filename = `${dateStr}-${slug}.md`;
+
+  return { filename, content: md };
 }

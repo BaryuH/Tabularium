@@ -8,8 +8,9 @@
  * - Escape or click-outside to close
  * - Live character and word counts
  */
-import { iconX, iconTask, iconTaskDone, iconListTodo, iconNote, iconExternalLink } from '../icons';
-import { escapeHtml, formatDateTag, HAS_DATE_PREFIX } from '../../util';
+import { iconX, iconTask, iconTaskDone, iconListTodo, iconNote, iconExternalLink, iconDownload } from '../icons';
+import { escapeHtml, formatDateTag, HAS_DATE_PREFIX, triggerDownload, formatCardAsMarkdown } from '../../util';
+import { showToast } from '../toast';
 import type { Store } from '../../state/store';
 
 export interface NotePanel {
@@ -156,7 +157,10 @@ export function createNotePanel(store: Store, onCardClick?: (url: string) => voi
             <span class="note-panel__date">${escapeHtml(dateStr)}</span>
             <span class="note-panel__counts">0 words · 0 chars</span>
           </div>
-          <button class="icon-btn note-panel__close" data-action="close-note" title="Close (Esc)">${iconX}</button>
+          <div class="note-panel__head-actions">
+            ${activeCardId ? `<button type="button" class="icon-btn note-panel__export-btn" data-action="export-note-md" title="Export as Markdown (.md)">${iconDownload}</button>` : ''}
+            <button type="button" class="icon-btn note-panel__close" data-action="close-note" title="Close (Esc)">${iconX}</button>
+          </div>
         </header>
 
         <div class="note-panel__body">
@@ -288,6 +292,18 @@ export function createNotePanel(store: Store, onCardClick?: (url: string) => voi
 
   const onClick = (event: MouseEvent): void => {
     const target = event.target as HTMLElement;
+    const exportBtn = target.closest<HTMLElement>('[data-action="export-note-md"]');
+    if (exportBtn && activeCardId) {
+      event.preventDefault();
+      flushSave();
+      const currentCard = store.getState().cards[activeCardId];
+      if (currentCard) {
+        const { filename, content } = formatCardAsMarkdown(currentCard);
+        triggerDownload(content, filename, 'text/markdown;charset=utf-8;');
+        showToast(`Exported "${filename}"`);
+      }
+      return;
+    }
     const openLink = target.closest<HTMLElement>('[data-action="open-embed-link"]');
     if (openLink) {
       event.preventDefault();
