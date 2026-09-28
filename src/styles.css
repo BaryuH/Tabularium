@@ -15,6 +15,7 @@
   --radius: 10px;
   --radius-sm: 6px;
   --gap: 16px;
+  --column-width: 320px;
   color-scheme: dark;
 }
 
@@ -396,7 +397,8 @@ body {
 }
 
 .column {
-  flex: 0 0 300px;
+  flex: 0 0 var(--column-width);
+  width: var(--column-width);
   display: flex;
   flex-direction: column;
   max-height: 100%;
@@ -499,7 +501,8 @@ body {
 }
 
 .column--add {
-  flex: 0 0 240px;
+  flex: 0 0 260px;
+  width: 260px;
   background: none;
   border: none;
   display: flex;
