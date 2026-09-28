@@ -191,7 +191,31 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
 
   const render = (): void => {
     if (!root) return;
+
+    // 1. Capture scroll positions of board and all columns to prevent layout jumps
+    const scrollPositions = new Map<string, number>();
+    root.querySelectorAll<HTMLElement>('.column[data-column-id]').forEach((col) => {
+      const colId = col.dataset.columnId;
+      const cardsEl = col.querySelector<HTMLElement>('.column__cards');
+      if (colId && cardsEl && cardsEl.scrollTop > 0) {
+        scrollPositions.set(colId, cardsEl.scrollTop);
+      }
+    });
+    const prevColumnsEl = root.querySelector<HTMLElement>('.columns');
+    const prevScrollLeft = prevColumnsEl?.scrollLeft ?? 0;
+
     root.innerHTML = viewHtml();
+
+    // 2. Restore scroll positions
+    if (prevScrollLeft > 0) {
+      const nextColumnsEl = root.querySelector<HTMLElement>('.columns');
+      if (nextColumnsEl) nextColumnsEl.scrollLeft = prevScrollLeft;
+    }
+    scrollPositions.forEach((scrollTop, colId) => {
+      const cardsEl = root?.querySelector<HTMLElement>(`.column[data-column-id="${colId}"] .column__cards`);
+      if (cardsEl) cardsEl.scrollTop = scrollTop;
+    });
+
     const input = root.querySelector<HTMLInputElement>('.editing-input');
     if (input) {
       input.focus();
@@ -201,6 +225,15 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
     root.querySelectorAll<HTMLImageElement>('img.card__fav').forEach((img) => {
       img.addEventListener('error', () => img.classList.add('card__fav--broken'));
     });
+
+    // 3. Cache clean board HTML snapshot for 0ms frame-0 render on next New Tab
+    if (!editing) {
+      try {
+        localStorage.setItem('tabularium_board_cache_html', root.innerHTML);
+      } catch {
+        // Ignore localStorage quota or access errors
+      }
+    }
   };
 
   const setEditing = (next: Editing | null): void => {
@@ -416,7 +449,23 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         if (id) void handleDeleteColumn(id);
         break;
       case 'delete-card':
-        if (id) void store.deleteCard(id);
+        if (id) {
+          const cardEl = root?.querySelector<HTMLElement>(`.card[data-id="${id}"]`);
+          if (cardEl) {
+            cardEl.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+            cardEl.style.opacity = '0';
+            cardEl.style.transform = 'scale(0.95)';
+            const columnEl = cardEl.closest<HTMLElement>('.column');
+            if (columnEl) {
+              const countEl = columnEl.querySelector<HTMLElement>('.column__count');
+              if (countEl) {
+                const currentCount = parseInt(countEl.textContent ?? '0', 10);
+                if (currentCount > 0) countEl.textContent = String(currentCount - 1);
+              }
+            }
+          }
+          void store.deleteCard(id);
+        }
         break;
       case 'edit-card':
         if (id) opts?.cardEditModal?.open(id);
@@ -440,7 +489,21 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
         }
         break;
       case 'toggle-task':
-        if (id) void store.toggleTaskComplete(id);
+        if (id) {
+          const cardEl = root?.querySelector<HTMLElement>(`.card[data-id="${id}"]`);
+          if (cardEl) {
+            const isDone = !cardEl.classList.contains('card--done');
+            cardEl.classList.toggle('card--done', isDone);
+            cardEl.setAttribute('aria-checked', String(isDone));
+            const checkBtn = cardEl.querySelector<HTMLElement>('.card__check');
+            if (checkBtn) {
+              checkBtn.innerHTML = isDone ? iconTaskDone : iconTask;
+              checkBtn.title = isDone ? 'Mark uncompleted' : 'Mark completed';
+              checkBtn.setAttribute('aria-label', checkBtn.title);
+            }
+          }
+          void store.toggleTaskComplete(id);
+        }
         break;
       case 'pick-icon':
         if (id) {
@@ -476,7 +539,17 @@ export function createBoardView(store: Store, opts?: BoardViewOptions): BoardVie
       const card = target.closest<HTMLElement>('.card');
       if (card?.dataset.id) {
         event.preventDefault();
-        void store.toggleTaskComplete(card.dataset.id);
+        const id = card.dataset.id;
+        const isDone = !card.classList.contains('card--done');
+        card.classList.toggle('card--done', isDone);
+        card.setAttribute('aria-checked', String(isDone));
+        const checkBtn = card.querySelector<HTMLElement>('.card__check');
+        if (checkBtn) {
+          checkBtn.innerHTML = isDone ? iconTaskDone : iconTask;
+          checkBtn.title = isDone ? 'Mark uncompleted' : 'Mark completed';
+          checkBtn.setAttribute('aria-label', checkBtn.title);
+        }
+        void store.toggleTaskComplete(id);
         return;
       }
     }
